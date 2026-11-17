@@ -26,7 +26,7 @@
       color: var(--text);
       line-height: 1.45;
     }
-    #app { max-width: 960px; margin: 0 auto; padding: 10px 12px 24px; }
+    #app { max-width: 1160px; margin: 0 auto; padding: 10px 12px 24px; }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
     .brand { display: flex; align-items: center; gap: 8px; }
     .brand h1 { margin: 0; font-size: 1.15rem; }
@@ -77,6 +77,68 @@
     .pill.off { opacity: 0.45; border-style: dashed; }
     .turn-bar { text-align: center; padding: 7px 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; background: var(--panel); border: 1px solid var(--border); }
     .turn-bar.mine { background: #1e3a8a; border-color: #60a5fa; color: #eff6ff; }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 236px;
+      gap: 12px;
+      align-items: start;
+    }
+    .game-main { min-width: 0; }
+    .reaction-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      position: sticky;
+      top: 10px;
+    }
+    .reaction-panel h3 {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stamp-grid { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    .stamp-btn {
+      width: 100%; text-align: left; background: var(--panel2); border: 1px solid #334155;
+      color: #f8fafc; border-radius: 9px; padding: 8px 10px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: transform 0.08s, border-color 0.12s, background 0.12s;
+    }
+    .stamp-btn:hover:not(:disabled) { border-color: #38bdf8; background: #172554; }
+    .stamp-btn:active:not(:disabled) { transform: scale(0.96); }
+    .stamp-btn:disabled { opacity: 0.5; cursor: wait; }
+    .reaction-feed {
+      margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px;
+      display: flex; flex-direction: column; gap: 5px; max-height: 220px; overflow-y: auto;
+    }
+    .reaction-item {
+      background: var(--panel2); border: 1px solid #1e293b; border-radius: 8px;
+      padding: 5px 8px; font-size: 0.78rem; animation: popIn 0.18s ease-out;
+    }
+    .reaction-item strong { color: #38bdf8; margin-right: 4px; }
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .stamp-toast-wrap {
+      position: fixed; top: 16px; right: 16px; z-index: 200;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none; max-width: 300px;
+    }
+    .stamp-toast {
+      background: rgba(15, 23, 42, 0.94); border: 2px solid #38bdf8;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); color: #f8fafc;
+      padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; font-weight: 800;
+      animation: toastPop 0.2s ease-out;
+    }
+    .stamp-toast small { display: block; font-size: 0.72rem; color: #93c5fd; }
+    @keyframes toastPop {
+      from { opacity: 0; transform: translateX(18px) scale(0.92); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
     .board-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.78rem; color: var(--muted); }
     .board-scroll {
       background: #020617; border: 1px solid var(--border); border-radius: 12px;
@@ -88,9 +150,7 @@
       background: #141c2c; border-radius: 5px; position: relative; cursor: pointer;
       border: 1px dashed #334155; overflow: hidden; user-select: none;
     }
-    .cell.has-card {
-      background: #030712; border: 1px solid #64748b;
-    }
+    .cell.has-card { background: #030712; border: 1px solid #64748b; }
     .cell:hover { border-color: #38bdf8; }
     .cell.fixed { background: #16213e; border: 2px solid #60a5fa; cursor: default; }
     .cell.last { box-shadow: inset 0 0 0 2px #f59e0b; }
@@ -182,15 +242,25 @@
     .replay-log li.cur { background: #1e3a8a; font-weight: 700; }
     .modal { position: fixed; inset: 0; background: rgba(2,6,23,0.75); display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 99; }
     .modal-body { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
-    @media (max-width: 640px) { .split { grid-template-columns: 1fr; } }
+
+    @media (max-width: 820px) {
+      .game-layout { grid-template-columns: 1fr; }
+      .reaction-panel { position: static; }
+      .stamp-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .split { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
+<div id="stamp-toast-wrap" class="stamp-toast-wrap"></div>
+
 <div id="app">
   <header class="header">
     <div class="brand">
       <span style="font-size:1.4rem;">➰</span>
-      <h1>ヒトスジナワ <small>Online v7</small></h1>
+      <h1>ヒトスジナワ <small>Online v9</small></h1>
     </div>
     <div class="row">
       <button id="btn-notify" class="btn btn-sm btn-outline">🔔 通知OFF</button>
@@ -260,44 +330,59 @@
     <div id="g-players" class="players-strip"></div>
     <div id="g-turn" class="turn-bar">読み込み中...</div>
 
-    <div class="board-tools">
-      <span>青枠＝お題シート（2マス分）／ タップで仮置き→確定</span>
-      <div class="row">
-        <button id="btn-zoom-out" class="btn btn-sm btn-outline">－</button>
-        <button id="btn-zoom-in" class="btn btn-sm btn-outline">＋</button>
-      </div>
-    </div>
-    <div class="board-scroll" id="g-board-scroll">
-      <div id="g-board" class="board-grid"></div>
-    </div>
+    <div class="game-layout">
+      <!-- 左側：盤面＋手札 -->
+      <div class="game-main">
+        <div class="board-tools">
+          <span>青枠＝お題シート（2マス分）／ タップで仮置き→確定</span>
+          <div class="row">
+            <button id="btn-zoom-out" class="btn btn-sm btn-outline">－</button>
+            <button id="btn-zoom-in" class="btn btn-sm btn-outline">＋</button>
+          </div>
+        </div>
+        <div class="board-scroll" id="g-board-scroll">
+          <div id="g-board" class="board-grid"></div>
+        </div>
 
-    <div id="pending-bar" class="pending-bar hidden">
-      <div id="pending-status" style="font-size:0.86rem;font-weight:700;">仮置き中</div>
-      <div class="row">
-        <button id="btn-pend-rot" class="btn btn-sm btn-outline">↻ 90°回転</button>
-        <button id="btn-pend-cancel" class="btn btn-sm btn-danger">✕ キャンセル</button>
-        <button id="btn-pend-confirm" class="btn btn-sm btn-ok">✅ 配置を確定</button>
-      </div>
-    </div>
+        <div id="pending-bar" class="pending-bar hidden">
+          <div id="pending-status" style="font-size:0.86rem;font-weight:700;">仮置き中</div>
+          <div class="row">
+            <button id="btn-pend-skel180" class="btn btn-sm btn-secondary hidden">🔄 スケルトンだけ180°回転</button>
+            <button id="btn-pend-rot" class="btn btn-sm btn-outline">↻ 90°回転</button>
+            <button id="btn-pend-cancel" class="btn btn-sm btn-danger">✕ キャンセル</button>
+            <button id="btn-pend-confirm" class="btn btn-sm btn-ok">✅ 配置を確定</button>
+          </div>
+        </div>
 
-    <div id="g-msg" class="banner-err hidden"></div>
-    <div id="g-hint-banner" class="banner-hint hidden"></div>
+        <div id="g-msg" class="banner-err hidden"></div>
+        <div id="g-hint-banner" class="banner-hint hidden"></div>
 
-    <div class="hand-box">
-      <div id="preview-box" class="preview-box hidden"></div>
+        <div class="hand-box">
+          <div id="preview-box" class="preview-box hidden"></div>
 
-      <div class="hand-top">
-        <span>手札（1枚、または青/ピ/黄のみのライン＋通常スケルトン2枚組）</span>
-        <div class="row">
-          <button id="btn-draw" class="btn btn-sm btn-primary hidden">山札から1枚引く</button>
-          <button id="btn-rot" class="btn btn-sm btn-outline" disabled>↻ 90°回転 (<span id="rot-deg">0</span>°)</button>
-          <button id="btn-clr" class="btn btn-sm btn-outline" disabled>解除</button>
-          <button id="btn-hint" class="btn btn-sm btn-outline hidden">💡 置ける場所ヒント</button>
-          <button id="btn-pass" class="btn btn-sm btn-warning" disabled>パス</button>
+          <div class="hand-top">
+            <span>手札（1枚、または青/ピ/黄のみのライン＋通常スケルトン2枚組）</span>
+            <div class="row">
+              <button id="btn-draw" class="btn btn-sm btn-primary hidden">山札から1枚引く</button>
+              <button id="btn-rot" class="btn btn-sm btn-outline" disabled>↻ 90°回転 (<span id="rot-deg">0</span>°)</button>
+              <button id="btn-clr" class="btn btn-sm btn-outline" disabled>解除</button>
+              <button id="btn-hint" class="btn btn-sm btn-outline hidden">💡 置ける場所ヒント</button>
+              <button id="btn-pass" class="btn btn-sm btn-warning" disabled>パス</button>
+            </div>
+          </div>
+          <div id="g-hand" class="hand-list"></div>
+          <div id="g-hint" class="muted" style="margin-top:4px;"></div>
         </div>
       </div>
-      <div id="g-hand" class="hand-list"></div>
-      <div id="g-hint" class="muted" style="margin-top:4px;"></div>
+
+      <!-- 右側：リアクションスタンプスペース -->
+      <aside class="reaction-panel" aria-label="リアクションスタンプ">
+        <h3>💬 スタンプ</h3>
+        <div id="stamp-grid" class="stamp-grid"></div>
+        <div id="reaction-feed" class="reaction-feed">
+          <span class="muted" style="font-size:0.75rem;">まだリアクションはありません</span>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -373,7 +458,7 @@
         <li><strong>クリア条件：</strong>2マス分のお題シートの途切れた線をすべてつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
         <li><strong>ゲームオーバー：</strong><strong>山札が0枚になった状態</strong>で、参加メンバー全員が1周連続でパスするとゲームオーバーになり、リプレイで振り返りができます。</li>
         <li><strong>色のルール：</strong>青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>。</li>
-        <li><strong>通常のスケルトン（[重]）：</strong>すでに出してあるカードには重ねられません。<strong>手札の青・ピンク・黄のみのラインカードと2枚1組</strong>で空きマスに配置します（混色カード「色変不可」とは組めません）。</li>
+        <li><strong>通常のスケルトン（[重]）：</strong>すでに出してあるカードには重ねられません。<strong>手札の青・ピンク・黄のみのラインカードと2枚1組</strong>で空きマスに配置します（まっすぐで半分だけ色のスケルトンは、合成小窓のボタンでスケルトンだけ180°回転できます）。</li>
         <li><strong>交差スケルトン（[重]）：</strong>2枚組では出せず、<strong>すでに盤面に置かれているまっすぐなラインカード（混色・2枚組で作った直線もOK）</strong>の上にのみ1枚重ねられます。</li>
         <li><strong>直線との交差予約：</strong>カーブの壁に線を突き当てる置き方はできませんが、<strong>直線（まだ交差していない直線）</strong>に対しては後から交差スケルトンを重ねられるため、交差で通り抜けた先の反対側が壁等で塞がれていなければ配置可能です。</li>
         <li><strong>パス制限：</strong>ラインカードや2枚組が置けるときはパスできません。出せる手が何もない時、または<strong>交差スケルトンしか置けない時</strong>はパスできます。</li>
@@ -399,6 +484,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
+const STAMPS = [
+  "😒インサイダー？",
+  "😆ナイス✨️",
+  "😨やばい😱",
+  "😠よくないよぉ⤴︎",
+  "😩やっちまったなあ",
+  "😏そんな生き方でいいの？"
+];
 
 const COLOR_INFO = {
   0: { name: "透明", short: "", hex: "#cbd5e1" },
@@ -494,6 +588,14 @@ function canOverlayColorSkel(card) {
   return !!card && card.type === "line" && PRIMARY_COLORS.has(card.ca) && PRIMARY_COLORS.has(card.cb);
 }
 
+/* 直線2枚組かつスケルトンが半分だけ色付き（片側透明）ならスケルトン単独180°回転可 */
+function canFlipStraightSkel(selected) {
+  if (!selected || selected.length !== 2) return false;
+  const lineC = selected.find((x) => x.type === "line");
+  const skelC = selected.find((x) => x.type === "skel");
+  return !!(lineC && skelC && lineC.shape === "straight" && skelC.shape === "straight" && skelC.ca !== skelC.cb && canOverlayColorSkel(lineC));
+}
+
 function isCrossableStraightCell(cell) {
   if (!cell || cell.fixed) return false;
   const isCrossed = !!cell.hasCross || (cell.segs && cell.segs.length >= 2);
@@ -530,7 +632,7 @@ function overlaySeg(baseSeg, skelSeg) {
   return { a: baseSeg.a, b: baseSeg.b, ca: cA, cb: cB };
 }
 
-function composeSelection(selected, rot) {
+function composeSelection(selected, rot, flipSkel = false) {
   if (!selected.length) return { ok: false, err: "手札からカードを選択してください。" };
   if (selected.length > 2) return { ok: false, err: "同時に選択できるのは2枚までです。" };
 
@@ -557,31 +659,29 @@ function composeSelection(selected, rot) {
   if (lineC.shape !== heavyC.shape) {
     return { ok: false, err: "同じ形（まっすぐ同士／まがった線同士）でないと重ねられません。" };
   }
+  const skRot = (canFlipStraightSkel(selected) && flipSkel) ? (rot + 2) % 4 : rot;
   const baseSeg = cardToSeg(lineC, rot);
-  const skSeg = cardToSeg(heavyC, rot);
+  const skSeg = cardToSeg(heavyC, skRot);
   return {
     ok: true,
     mode: "combo",
     segs: [overlaySeg(baseSeg, skSeg)],
-    layers: [{ card: lineC, rot }, { card: heavyC, rot }],
+    layers: [{ card: lineC, rot }, { card: heavyC, rot: skRot }],
     cardType: "line"
   };
 }
 
-/* 交差で突き抜けた先のマスが壁や色違いで塞がれていないか確認 */
 function checkCrossExit(board, fromR, fromC, dir, crossColor) {
   const [dr, dc] = DELTA[dir];
   const exitNb = board[`${fromR + dr}_${fromC + dc}`];
-  if (!exitNb) return true; // 空きマスなら通れる
+  if (!exitNb) return true;
   const exitPorts = (exitNb.segs || []).map((s) => portColor(s, OPP[dir])).filter((v) => v !== null);
-  if (exitPorts.length > 0) {
-    return exitPorts[0] === crossColor;
-  }
-  return false; // 反対側にすでにカードがあり線がない（カーブ等の壁）→通れない
+  if (exitPorts.length > 0) return exitPorts[0] === crossColor;
+  return false;
 }
 
-function validatePlace({ board, r, c, selected, rot }) {
-  const comp = composeSelection(selected, rot);
+function validatePlace({ board, r, c, selected, rot, flipSkel = false }) {
+  const comp = composeSelection(selected, rot, flipSkel);
   if (!comp.ok) return comp;
 
   const key = `${r}_${c}`;
@@ -647,14 +747,12 @@ function validatePlace({ board, r, c, selected, rot }) {
     if (!nb) continue;
     const nbPorts = (nb.segs || []).map((s) => portColor(s, OPP[dir])).filter((v) => v !== null);
 
-    // 隣の線が自分の壁に突き当たる → 自分が直線で交差でき、さらに反対側も壁（カーブ等）で塞がれていない場合のみOK
     if (myPorts.length === 0 && nbPorts.length > 0) {
       if (!(selfCanCrossLater && PRIMARY_COLORS.has(nbPorts[0]) && checkCrossExit(board, r, c, OPP[dir], nbPorts[0]))) {
         return { ok: false, err: "隣の線を交差で逃がしても反対側のカード（カーブ等）に当たってしまうため置けません。" };
       }
       continue;
     }
-    // 自分の線が隣の壁に突き当たる → 隣が直線で交差でき、さらにその先も壁（カーブ等）で塞がれていない場合のみOK
     if (myPorts.length > 0 && nbPorts.length === 0) {
       if (!(isCrossableStraightCell(nb) && PRIMARY_COLORS.has(myPorts[0]) && checkCrossExit(board, nr, nc, dir, myPorts[0]))) {
         return { ok: false, err: "隣のカード（カーブや行き止まり）に線がぶつかってしまいます。" };
@@ -685,7 +783,7 @@ function findFirstValidMove(board, hand, includeCross = true) {
         if (card.type !== "cross") continue;
         for (let rot = 0; rot < 4; rot++) {
           if (validatePlace({ board, r, c, selected: [card], rot }).ok) {
-            return { key, r, c, cards: [card], rot, desc: `盤面の (${r}, ${c}) に「交差スケルトン」を重ねられます` };
+            return { key, r, c, cards: [card], rot, flipSkel: false, desc: `盤面の (${r}, ${c}) に「交差スケルトン」を重ねられます` };
           }
         }
       }
@@ -709,7 +807,7 @@ function findFirstValidMove(board, hand, includeCross = true) {
     for (const l of lines) {
       for (let rot = 0; rot < 4; rot++) {
         if (validatePlace({ board, r, c, selected: [l], rot }).ok) {
-          return { key: nk, r, c, cards: [l], rot, desc: `マス (${r}, ${c}) に「ライン（${COLOR_INFO[l.ca].name}↔${COLOR_INFO[l.cb].name}）」を置けます` };
+          return { key: nk, r, c, cards: [l], rot, flipSkel: false, desc: `マス (${r}, ${c}) に「ライン（${COLOR_INFO[l.ca].name}↔${COLOR_INFO[l.cb].name}）」を置けます` };
         }
       }
     }
@@ -717,9 +815,12 @@ function findFirstValidMove(board, hand, includeCross = true) {
       if (!canOverlayColorSkel(l)) continue;
       for (const s of skels) {
         if (l.shape !== s.shape) continue;
-        for (let rot = 0; rot < 4; rot++) {
-          if (validatePlace({ board, r, c, selected: [l, s], rot }).ok) {
-            return { key: nk, r, c, cards: [l, s], rot, desc: `マス (${r}, ${c}) に「ライン＋スケルトン」の2枚組を置けます` };
+        const flips = (l.shape === "straight" && s.ca !== s.cb) ? [false, true] : [false];
+        for (const flipSkel of flips) {
+          for (let rot = 0; rot < 4; rot++) {
+            if (validatePlace({ board, r, c, selected: [l, s], rot, flipSkel }).ok) {
+              return { key: nk, r, c, cards: [l, s], rot, flipSkel, desc: `マス (${r}, ${c}) に「ライン＋スケルトン」の2枚組を置けます` };
+            }
           }
         }
       }
@@ -728,11 +829,11 @@ function findFirstValidMove(board, hand, includeCross = true) {
   return null;
 }
 
-function buildPreviewCell(board, r, c, selected, rot) {
-  const res = validatePlace({ board, r, c, selected, rot });
+function buildPreviewCell(board, r, c, selected, rot, flipSkel = false) {
+  const res = validatePlace({ board, r, c, selected, rot, flipSkel });
   if (res.ok) return { ok: true, cell: res.cell };
   const exist = board[`${r}_${c}`];
-  const comp = composeSelection(selected, rot);
+  const comp = composeSelection(selected, rot, flipSkel);
   if (!comp.ok) return { ok: false, err: comp.err, cell: null };
   if (!exist && selected.length === 1 && selected[0].type !== "line") {
     return { ok: false, err: res.err, cell: null };
@@ -867,10 +968,13 @@ let roomData = null;
 let roomRef = null;
 let selectedHandIds = [];
 let rotSteps = 0;
+let skelFlip180 = false;
 let pendingPos = null;
 let hintKey = null;
 let cellSize = 74;
 let lastNotifiedTurnKey = null;
+let lastSeenReactionId = null;
+let stampCooldown = false;
 let titleTimer = null;
 let repIdx = 0;
 let repTimer = null;
@@ -888,18 +992,89 @@ function showErr(elId, msg) {
   setTimeout(() => el.classList.add("hidden"), 4500);
 }
 
-function playChime() {
+function playTone(freq1, freq2) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
-    osc.type = "sine"; osc.frequency.setValueAtTime(660, ctx.currentTime);
-    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12);
-    g.gain.setValueAtTime(0.12, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.type = "sine"; osc.frequency.setValueAtTime(freq1, ctx.currentTime);
+    if (freq2) osc.frequency.setValueAtTime(freq2, ctx.currentTime + 0.1);
+    g.gain.setValueAtTime(0.1, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
     osc.connect(g); g.connect(ctx.destination);
-    osc.start(); osc.stop(ctx.currentTime + 0.36);
+    osc.start(); osc.stop(ctx.currentTime + 0.31);
   } catch {}
+}
+
+function playChime() { playTone(660, 880); }
+function playPop() { playTone(520, 740); }
+
+function initStampButtons() {
+  const grid = $("stamp-grid");
+  grid.innerHTML = "";
+  STAMPS.forEach((text) => {
+    const btn = document.createElement("button");
+    btn.className = "stamp-btn";
+    btn.textContent = text;
+    btn.onclick = () => sendStamp(text);
+    grid.appendChild(btn);
+  });
+}
+initStampButtons();
+
+async function sendStamp(stamp) {
+  if (!roomId || !roomData || stampCooldown) return;
+  stampCooldown = true;
+  document.querySelectorAll(".stamp-btn").forEach((b) => (b.disabled = true));
+  setTimeout(() => {
+    stampCooldown = false;
+    document.querySelectorAll(".stamp-btn").forEach((b) => (b.disabled = false));
+  }, 800);
+
+  const myName = roomData.players?.[myUid]?.name || getPlayerName();
+  const item = {
+    id: `r_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    uid: myUid,
+    name: myName,
+    stamp,
+    at: Date.now()
+  };
+  const nextList = [...(roomData.reactions || []), item].slice(-6);
+  await update(ref(db, `rooms/${roomId}`), { reactions: nextList });
+}
+
+function showStampToast(item) {
+  const wrap = $("stamp-toast-wrap");
+  const div = document.createElement("div");
+  div.className = "stamp-toast";
+  div.innerHTML = `<small>${esc(item.name)}</small>${esc(item.stamp)}`;
+  wrap.appendChild(div);
+  setTimeout(() => div.remove(), 2800);
+}
+
+function renderReactions() {
+  const list = roomData?.reactions || [];
+  const feed = $("reaction-feed");
+  if (!list.length) {
+    feed.innerHTML = '<span class="muted" style="font-size:0.75rem;">まだリアクションはありません</span>';
+    return;
+  }
+  const latest = list[list.length - 1];
+  if (latest && latest.id !== lastSeenReactionId) {
+    if (lastSeenReactionId !== null) {
+      playPop();
+      showStampToast(latest);
+    }
+    lastSeenReactionId = latest.id;
+  }
+
+  feed.innerHTML = "";
+  [...list].reverse().forEach((item) => {
+    const div = document.createElement("div");
+    div.className = "reaction-item";
+    div.innerHTML = `<strong>${esc(item.name)}:</strong><span>${esc(item.stamp)}</span>`;
+    feed.appendChild(div);
+  });
 }
 
 function updateNotifyBtn() {
@@ -1022,6 +1197,7 @@ $("btn-reclaim-close").onclick = () => $("mod-reclaim").classList.add("hidden");
 function subscribeRoom(id) {
   if (roomRef) off(roomRef);
   roomId = id;
+  lastSeenReactionId = null;
   roomRef = ref(db, `rooms/${id}`);
   const pOnlineRef = ref(db, `rooms/${id}/players/${myUid}/online`);
   set(pOnlineRef, true);
@@ -1029,7 +1205,12 @@ function subscribeRoom(id) {
 
   onValue(roomRef, (snap) => {
     if (!snap.exists()) { alert("ルームが閉じられました。"); location.reload(); return; }
+    const firstLoad = roomData === null;
     roomData = snap.val();
+    if (firstLoad) {
+      const rList = roomData.reactions || [];
+      lastSeenReactionId = rList.length ? rList[rList.length - 1].id : "";
+    }
     renderAll();
   });
 }
@@ -1053,11 +1234,12 @@ async function startGame() {
     board[k] = { segs: v.segs, fixed: true, layers: [], hasHeavy: false, hasCross: false };
   });
 
-  selectedHandIds = []; rotSteps = 0; pendingPos = null; hintKey = null;
+  selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; hintKey = null;
+  lastSeenReactionId = "";
   await update(ref(db, `rooms/${roomId}`), {
     status: "playing", themeId: theme.id, themeName: theme.name, deck, board,
     players: nextPlayers, turnOrder: shuffled.map((p) => p.uid),
-    turnIndex: 0, hasDrawn: false, passStreak: 0, lastKey: null, history: [], endedAt: null
+    turnIndex: 0, hasDrawn: false, passStreak: 0, lastKey: null, history: [], reactions: [], endedAt: null
   });
 }
 
@@ -1080,6 +1262,7 @@ $("btn-copy").onclick = () => {
 
 function renderAll() {
   if (!roomData) return;
+  renderReactions();
   const st = roomData.status;
   if (st === "lobby") { showScreen("lobby"); renderLobby(); }
   else if (st === "playing") {
@@ -1167,7 +1350,8 @@ function renderPreviewBox(hand, canAct) {
     return;
   }
   box.classList.remove("hidden");
-  const comp = composeSelection(selected, rotSteps);
+  const showFlipBtn = canFlipStraightSkel(selected);
+  const comp = composeSelection(selected, rotSteps, skelFlip180);
 
   if (selected.length === 1) {
     const c0 = selected[0];
@@ -1192,8 +1376,10 @@ function renderPreviewBox(hand, canAct) {
       </div>`;
   } else {
     const [c1, c2] = selected;
-    const s1 = cardToSeg(c1, rotSteps);
-    const s2 = cardToSeg(c2, c2.type === "cross" ? (rotSteps + 1) % 4 : rotSteps);
+    const r1 = (c1.type === "skel" && showFlipBtn && skelFlip180) ? (rotSteps + 2) % 4 : rotSteps;
+    const r2 = (c2.type === "skel" && showFlipBtn && skelFlip180) ? (rotSteps + 2) % 4 : (c2.type === "cross" ? (rotSteps + 1) % 4 : rotSteps);
+    const s1 = cardToSeg(c1, r1);
+    const s2 = cardToSeg(c2, r2);
     let resHtml = "";
     if (comp.ok) {
       const lbls = comp.segs.map((s) => `${COLOR_INFO[s.ca].name}↔${COLOR_INFO[s.cb].name}`).join(" ＋ ");
@@ -1202,6 +1388,7 @@ function renderPreviewBox(hand, canAct) {
         <div class="preview-info">
           <div style="font-weight:800;color:#4ade80;">✅ 合成結果：${lbls}</div>
           <div class="muted">盤面の空きマスをタップして仮置きできます（90°回転も反映されます）。</div>
+          ${showFlipBtn ? '<div style="margin-top:6px;"><button id="btn-prev-skel180" class="btn btn-sm btn-secondary">🔄 スケルトンだけ180°回転</button></div>' : ''}
         </div>`;
     } else {
       resHtml = `
@@ -1218,6 +1405,11 @@ function renderPreviewBox(hand, canAct) {
         <span style="font-weight:900;">＝</span>
       </div>
       ${resHtml}`;
+
+    const flipBtn = document.getElementById("btn-prev-skel180");
+    if (flipBtn) {
+      flipBtn.onclick = () => { skelFlip180 = !skelFlip180; renderGame(); };
+    }
   }
 }
 
@@ -1301,11 +1493,12 @@ function renderGame() {
   selectedHandIds = selectedHandIds.filter((id) => hand.some((c) => c.id === id));
   const selected = hand.filter((x) => selectedHandIds.includes(x.id));
   if (!readyToPlay || !selected.length) pendingPos = null;
+  if (!canFlipStraightSkel(selected)) skelFlip180 = false;
 
   let pendOverlay = null;
   const pbar = $("pending-bar");
   if (pendingPos && readyToPlay && selected.length) {
-    const prev = buildPreviewCell(board, pendingPos.r, pendingPos.c, selected, rotSteps);
+    const prev = buildPreviewCell(board, pendingPos.r, pendingPos.c, selected, rotSteps, skelFlip180);
     if (prev.cell) {
       pendOverlay = { key: `${pendingPos.r}_${pendingPos.c}`, cell: prev.cell, ok: prev.ok };
       pbar.classList.remove("hidden");
@@ -1314,6 +1507,7 @@ function renderGame() {
         ? `✅ 仮置き中 (${pendingPos.r}, ${pendingPos.c})：確定を押すか、回転/キャンセルできます`
         : `⚠️ 仮置き中：${prev.err}`;
       $("btn-pend-confirm").disabled = !prev.ok;
+      $("btn-pend-skel180").classList.toggle("hidden", !canFlipStraightSkel(selected));
     } else {
       pendingPos = null;
       pbar.classList.add("hidden");
@@ -1330,13 +1524,15 @@ function renderGame() {
 function renderHand(hand, canAct) {
   const wrap = $("g-hand");
   wrap.innerHTML = "";
+  const selected = hand.filter((x) => selectedHandIds.includes(x.id));
+  const flipActive = canFlipStraightSkel(selected) && skelFlip180;
 
   hand.forEach((card) => {
     const isSel = selectedHandIds.includes(card.id);
     const isSkel = card.type !== "line";
     const el = document.createElement("div");
     el.className = "hcard" + (isSkel ? " is-skel" : "") + (isSel ? " sel" : "");
-    const rot = isSel ? rotSteps : 0;
+    const rot = isSel ? ((card.type === "skel" && flipActive) ? (rotSteps + 2) % 4 : rotSteps) : 0;
     const seg = cardToSeg(card, rot);
     const svg = renderCellSvg([seg], card.type);
     const cNameA = COLOR_INFO[seg.ca]?.name || "透明";
@@ -1358,6 +1554,7 @@ function renderHand(hand, canAct) {
         if (selectedHandIds.length >= 2) selectedHandIds.shift();
         selectedHandIds.push(card.id);
       }
+      skelFlip180 = false;
       pendingPos = null;
       hintKey = null;
       $("g-hint-banner").classList.add("hidden");
@@ -1375,9 +1572,10 @@ function renderHand(hand, canAct) {
 $("btn-zoom-in").onclick = () => { cellSize = Math.min(110, cellSize + 10); renderAll(); };
 $("btn-zoom-out").onclick = () => { cellSize = Math.max(46, cellSize - 10); renderAll(); };
 $("btn-rot").onclick = () => { rotSteps = (rotSteps + 1) % 4; renderGame(); };
-$("btn-clr").onclick = () => { selectedHandIds = []; rotSteps = 0; pendingPos = null; renderGame(); };
+$("btn-clr").onclick = () => { selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; renderGame(); };
 
 $("btn-pend-rot").onclick = () => { rotSteps = (rotSteps + 1) % 4; renderGame(); };
+$("btn-pend-skel180").onclick = () => { skelFlip180 = !skelFlip180; renderGame(); };
 $("btn-pend-cancel").onclick = () => { pendingPos = null; renderGame(); };
 
 $("btn-hint").onclick = () => {
@@ -1388,6 +1586,7 @@ $("btn-hint").onclick = () => {
   hintKey = move.key;
   selectedHandIds = move.cards.map((c) => c.id);
   rotSteps = move.rot;
+  skelFlip180 = !!move.flipSkel;
   pendingPos = null;
   const hb = $("g-hint-banner");
   hb.textContent = `💡 ヒント（紫枠）：${move.desc}`;
@@ -1434,7 +1633,7 @@ $("btn-pass").onclick = async () => {
   const hist = [...(roomData.history || []), {
     type: "pass", uid: myUid, name: roomData.players[myUid].name, at: Date.now()
   }];
-  selectedHandIds = []; rotSteps = 0; pendingPos = null; hintKey = null;
+  selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; hintKey = null;
   $("g-hint-banner").classList.add("hidden");
 
   await update(ref(db, `rooms/${roomId}`), {
@@ -1459,18 +1658,22 @@ function onCellTap(r, c) {
     return;
   }
   const board = roomData.board || {};
-  const curCheck = buildPreviewCell(board, r, c, selected, rotSteps);
+  const curCheck = buildPreviewCell(board, r, c, selected, rotSteps, skelFlip180);
   if (!curCheck.cell) {
     showErr("g-msg", curCheck.err);
     return;
   }
   if (!curCheck.ok) {
-    for (let rr = 0; rr < 4; rr++) {
-      const testRot = (rotSteps + rr) % 4;
-      const tryRes = validatePlace({ board, r, c, selected, rot: testRot });
-      if (tryRes.ok) {
-        rotSteps = testRot;
-        break;
+    const flipCandidates = canFlipStraightSkel(selected) ? [skelFlip180, !skelFlip180] : [false];
+    outer: for (const fs of flipCandidates) {
+      for (let rr = 0; rr < 4; rr++) {
+        const testRot = (rotSteps + rr) % 4;
+        const tryRes = validatePlace({ board, r, c, selected, rot: testRot, flipSkel: fs });
+        if (tryRes.ok) {
+          rotSteps = testRot;
+          skelFlip180 = fs;
+          break outer;
+        }
       }
     }
   }
@@ -1484,7 +1687,7 @@ $("btn-pend-confirm").onclick = async () => {
   const hand = roomData.players[myUid]?.hand || [];
   const selected = hand.filter((x) => selectedHandIds.includes(x.id));
   const board = roomData.board || {};
-  const res = validatePlace({ board, r, c, selected, rot: rotSteps });
+  const res = validatePlace({ board, r, c, selected, rot: rotSteps, flipSkel: skelFlip180 });
   if (!res.ok) { showErr("g-msg", res.err); return; }
 
   const key = `${r}_${c}`;
@@ -1496,7 +1699,7 @@ $("btn-pend-confirm").onclick = async () => {
     key, r, c, cell: res.cell, cards: selected, at: Date.now()
   }];
 
-  selectedHandIds = []; rotSteps = 0; pendingPos = null; hintKey = null;
+  selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; hintKey = null;
   $("g-hint-banner").classList.add("hidden");
   await update(ref(db, `rooms/${roomId}`), {
     [`board/${key}`]: res.cell,
