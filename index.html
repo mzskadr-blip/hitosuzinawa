@@ -86,27 +86,52 @@
       border: 1px solid #1e293b; overflow: hidden; user-select: none;
     }
     .cell:hover { border-color: #38bdf8; }
-    .cell.fixed { background: #111827; border-color: #475569; cursor: default; }
+    .cell.fixed { background: #141c2f; border-color: #60a5fa; cursor: default; }
     .cell.last { box-shadow: inset 0 0 0 2px #f59e0b; }
     .cell.readonly { cursor: default; }
     .cell.readonly:hover { border-color: #1e293b; }
     .cell-tag {
       position: absolute; top: 2px; right: 2px; font-size: 9px; font-weight: 800;
-      background: rgba(15, 23, 42, 0.85); color: #f8fafc; padding: 0 3px; border-radius: 3px; border: 1px solid #475569; pointer-events: none;
+      background: rgba(226, 232, 240, 0.9); color: #0f172a; padding: 0 3px; border-radius: 3px; pointer-events: none;
+    }
+    .cell-theme-lbl {
+      position: absolute; bottom: 2px; left: 3px; font-size: 9px; font-weight: 800;
+      color: #93c5fd; pointer-events: none;
     }
     .hand-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-top: 8px; }
     .hand-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 0.84rem; font-weight: 700; }
     .hand-list { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 6px; }
     .hcard {
-      flex: 0 0 88px; background: #090d16; border: 2px solid #334155; border-radius: 10px;
+      flex: 0 0 90px; background: #070b12; border: 2px solid #334155; border-radius: 10px;
       padding: 5px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; position: relative;
+      transition: transform 0.1s, border-color 0.1s;
     }
-    .hcard.sel { border-color: #38bdf8; background: #0c1a33; transform: translateY(-3px); }
-    .hcard .svg-wrap { width: 64px; height: 64px; }
-    .hcard .lbl { font-size: 10px; font-weight: 700; text-align: center; color: #e2e8f0; line-height: 1.2; }
+    /* スケルトンカード用：透明感のあるグレー市松＋点線枠 */
+    .hcard.is-skel {
+      background-color: #475569;
+      background-image:
+        linear-gradient(45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.12) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.12) 75%);
+      background-size: 12px 12px;
+      background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+      border: 2px dashed #cbd5e1;
+    }
+    .hcard.sel { border-color: #38bdf8; border-style: solid; box-shadow: 0 0 0 2px rgba(56,189,248,0.45); transform: translateY(-4px); }
+    .hcard .svg-wrap { width: 64px; height: 64px; border-radius: 6px; overflow: hidden; }
+    .hcard.is-skel .svg-wrap { background: rgba(255, 255, 255, 0.14); border: 1px dashed rgba(255,255,255,0.35); }
+    .hcard .lbl { font-size: 10px; font-weight: 800; text-align: center; color: #f8fafc; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+    .hcard .type-pill {
+      font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 800;
+      background: #1e293b; color: #93c5fd; border: 1px solid #334155;
+    }
+    .hcard.is-skel .type-pill {
+      background: #e2e8f0; color: #0f172a; border-color: #94a3b8;
+    }
     .hcard .heavy-mark {
       position: absolute; top: 3px; right: 3px; font-size: 9px; font-weight: 900;
-      background: #e2e8f0; color: #0f172a; padding: 0 3px; border-radius: 3px;
+      background: #f8fafc; color: #0f172a; padding: 0 4px; border-radius: 3px; border: 1px solid #64748b;
     }
     .clear-title { text-align: center; margin-bottom: 10px; }
     .clear-title .tag { display: inline-block; background: #f59e0b; color: #0f172a; font-weight: 900; padding: 4px 14px; border-radius: 999px; margin-bottom: 6px; }
@@ -195,7 +220,7 @@
     <div id="g-turn" class="turn-bar">読み込み中...</div>
 
     <div class="board-tools">
-      <span>タップで配置（既存の線につなげて配置）</span>
+      <span>青枠＝お題シート（2マス分）／既存の線につなげて配置</span>
       <div class="row">
         <button id="btn-zoom-out" class="btn btn-sm btn-outline">－</button>
         <button id="btn-zoom-in" class="btn btn-sm btn-outline">＋</button>
@@ -208,7 +233,7 @@
 
     <div class="hand-box">
       <div class="hand-top">
-        <span>手札（1枚、または2枚組で選択）</span>
+        <span>手札（黒背景＝ライン ／ 半透明グレー＝スケルトン[重]）</span>
         <div class="row">
           <button id="btn-draw" class="btn btn-sm btn-primary hidden">山札から1枚引く</button>
           <button id="btn-rot" class="btn btn-sm btn-outline" disabled>↻ 90°回転 (<span id="rot-deg">0</span>°)</button>
@@ -291,11 +316,11 @@
     <div class="modal-body">
       <h3 style="margin-top:0;">ヒトスジナワ ルール</h3>
       <ul style="padding-left:18px;font-size:0.88rem;">
-        <li><strong>クリア条件：</strong>すべての途切れた線をつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
-        <li><strong>色のルール：</strong>青・ピンク・黄が基本で、「重」スケルトンを重ねると色が変わります。<br>
+        <li><strong>クリア条件：</strong>2マス分のお題シートの途切れた線をすべてつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
+        <li><strong>色のルール：</strong>青・ピンク・黄が基本で、「重」スケルトン（半透明グレー）を重ねると色が変わります。<br>
           青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>／3色全部＝<strong>黒</strong></li>
-        <li><strong>ラインカード：</strong>単体で配置できます。必ず既存の線に接して同じ色がつながるように置きます。</li>
-        <li><strong>スケルトンカード（「重」）：</strong>単体では置けません。手札のラインカードと<strong>2枚同時に選んで</strong>出すか、盤面のラインカードに重ねます（1マスに1枚まで）。片側だけ色を変えるものは「⇄ 端反転」で向きを変えられます。</li>
+        <li><strong>ラインカード（63枚）：</strong>単体で配置できます。必ず既存の線に接して同じ色がつながるように置きます。</li>
+        <li><strong>スケルトンカード（35枚・[重]）：</strong>単体では置けません。手札のラインカードと<strong>2枚同時に選んで</strong>出すか、盤面のラインカードに重ねます（1マスに1枚まで）。片側だけ色を変えるものは「⇄ 端反転」で向きを変えられます。</li>
         <li><strong>スケルトン（交差）：</strong>まっすぐなラインカードに垂直に重ねられます。</li>
       </ul>
       <button id="btn-rules-close" class="btn btn-primary btn-block">閉じる</button>
@@ -321,7 +346,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const COLOR_INFO = {
-  0: { name: "透明", short: "", hex: "#e2e8f0" },
+  0: { name: "透明", short: "", hex: "#cbd5e1" },
   1: { name: "青", short: "青", hex: "#38bdf8" },
   2: { name: "ピンク", short: "ピ", hex: "#f472b6" },
   3: { name: "紫", short: "紫", hex: "#a855f7" },
@@ -332,27 +357,33 @@ const COLOR_INFO = {
 };
 const C = 1, M = 2, Y = 4, P = 3, G = 5, O = 6, K = 7;
 
+/* ============================================================
+   18種類のお題シート（すべて横2マス分: "0_0" と "0_1"）
+   ============================================================ */
 const THEMES = [
-  { id: 1, name: "No.01 はじまりの青", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: C, cb: C }] } } },
-  { id: 2, name: "No.02 ピンクのカーブ", cells: { "0_0": { segs: [{ a: "E", b: "S", ca: M, cb: M }] }, "2_2": { segs: [{ a: "N", b: "W", ca: M, cb: M }] } } },
-  { id: 3, name: "No.03 黄金の架け橋", cells: { "0_-1": { segs: [{ a: "N", b: "S", ca: Y, cb: Y }] }, "0_1": { segs: [{ a: "N", b: "S", ca: Y, cb: Y }] } } },
-  { id: 4, name: "No.04 ツートンライン", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: P, cb: M }] } } },
-  { id: 5, name: "No.05 オレンジの輪", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: O, cb: O }] } } },
-  { id: 6, name: "No.06 新緑の道", cells: { "-1_-1": { segs: [{ a: "E", b: "S", ca: G, cb: G }] }, "1_1": { segs: [{ a: "N", b: "W", ca: G, cb: G }] } } },
-  { id: 7, name: "No.07 紫と青の出会い", cells: { "-1_0": { segs: [{ a: "W", b: "E", ca: P, cb: C }] }, "1_0": { segs: [{ a: "W", b: "E", ca: C, cb: P }] } } },
-  { id: 8, name: "No.08 三原色ステップ", cells: { "-1_-1": { segs: [{ a: "E", b: "S", ca: C, cb: C }] }, "-1_1": { segs: [{ a: "W", b: "S", ca: M, cb: M }] }, "1_0": { segs: [{ a: "W", b: "E", ca: Y, cb: Y }] } } },
-  { id: 9, name: "No.09 中央の交差点", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: C, cb: C }, { a: "W", b: "E", ca: M, cb: M }] } } },
-  { id: 10, name: "No.10 黒の試練", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: K, cb: M }] } } },
-  { id: 11, name: "No.11 ツイン・ブリッジ", cells: { "-2_0": { segs: [{ a: "W", b: "E", ca: C, cb: C }] }, "2_0": { segs: [{ a: "W", b: "E", ca: O, cb: O }] } } },
-  { id: 12, name: "No.12 カラフル・クロス", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: Y, cb: G }, { a: "W", b: "E", ca: M, cb: P }] } } },
-  { id: 13, name: "No.13 夕暮れと夜空", cells: { "-1_0": { segs: [{ a: "W", b: "E", ca: O, cb: O }] }, "1_0": { segs: [{ a: "W", b: "E", ca: P, cb: P }] } } },
-  { id: 14, name: "No.14 並行する2つの流れ", cells: { "0_-2": { segs: [{ a: "N", b: "S", ca: G, cb: G }] }, "0_2": { segs: [{ a: "N", b: "S", ca: K, cb: K }] } } },
-  { id: 15, name: "No.15 斜めの共鳴", cells: { "-1_-1": { segs: [{ a: "N", b: "S", ca: C, cb: G }] }, "1_1": { segs: [{ a: "N", b: "S", ca: M, cb: O }] } } },
-  { id: 16, name: "No.16 ダブル・クロス", cells: { "-1_0": { segs: [{ a: "N", b: "S", ca: C, cb: C }, { a: "W", b: "E", ca: Y, cb: Y }] }, "1_0": { segs: [{ a: "N", b: "S", ca: M, cb: M }, { a: "W", b: "E", ca: G, cb: G }] } } },
-  { id: 17, name: "No.17 四色のコーナー", cells: { "-1_-1": { segs: [{ a: "E", b: "S", ca: C, cb: M }] }, "-1_1": { segs: [{ a: "W", b: "S", ca: M, cb: Y }] }, "1_-1": { segs: [{ a: "N", b: "E", ca: Y, cb: C }] } } },
-  { id: 18, name: "No.18 グランドフィナーレ", cells: { "-1_-1": { segs: [{ a: "E", b: "S", ca: P, cb: K }] }, "0_0": { segs: [{ a: "N", b: "S", ca: O, cb: O }, { a: "W", b: "E", ca: G, cb: G }] }, "1_1": { segs: [{ a: "N", b: "W", ca: C, cb: M }] } } }
+  { id: 1, name: "No.01 はじまりの青と紫", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: C, cb: P }] }, "0_1": { segs: [{ a: "W", b: "N", ca: P, cb: M }] } } },
+  { id: 2, name: "No.02 ピンクの曲がり道", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: M, cb: M }] }, "0_1": { segs: [{ a: "W", b: "S", ca: M, cb: M }] } } },
+  { id: 3, name: "No.03 黄金のゲート", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: Y, cb: Y }] }, "0_1": { segs: [{ a: "N", b: "S", ca: Y, cb: Y }] } } },
+  { id: 4, name: "No.04 ツートン・ストレート", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: C, cb: G }] }, "0_1": { segs: [{ a: "W", b: "E", ca: G, cb: Y }] } } },
+  { id: 5, name: "No.05 オレンジ＆ピンク", cells: { "0_0": { segs: [{ a: "N", b: "E", ca: O, cb: O }] }, "0_1": { segs: [{ a: "W", b: "E", ca: O, cb: M }] } } },
+  { id: 6, name: "No.06 緑のループ入り口", cells: { "0_0": { segs: [{ a: "N", b: "W", ca: G, cb: G }] }, "0_1": { segs: [{ a: "N", b: "E", ca: G, cb: C }] } } },
+  { id: 7, name: "No.07 紫とオレンジの橋", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: P, cb: P }] }, "0_1": { segs: [{ a: "W", b: "N", ca: P, cb: O }] } } },
+  { id: 8, name: "No.08 三原色ツイン", cells: { "0_0": { segs: [{ a: "N", b: "W", ca: C, cb: M }] }, "0_1": { segs: [{ a: "E", b: "S", ca: Y, cb: C }] } } },
+  { id: 9, name: "No.09 中央クロスと直線", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: C, cb: C }, { a: "W", b: "E", ca: M, cb: M }] }, "0_1": { segs: [{ a: "W", b: "E", ca: M, cb: P }] } } },
+  { id: 10, name: "No.10 黒と青の連結", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: K, cb: K }] }, "0_1": { segs: [{ a: "W", b: "S", ca: K, cb: C }] } } },
+  { id: 11, name: "No.11 平行する2色", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: C, cb: P }] }, "0_1": { segs: [{ a: "N", b: "S", ca: O, cb: Y }] } } },
+  { id: 12, name: "No.12 十字とカーブ", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: Y, cb: G }, { a: "W", b: "E", ca: C, cb: C }] }, "0_1": { segs: [{ a: "W", b: "N", ca: C, cb: M }] } } },
+  { id: 13, name: "No.13 夕暮れのアーチ", cells: { "0_0": { segs: [{ a: "S", b: "E", ca: O, cb: O }] }, "0_1": { segs: [{ a: "W", b: "S", ca: O, cb: P }] } } },
+  { id: 14, name: "No.14 虹への分岐", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: G, cb: G }] }, "0_1": { segs: [{ a: "W", b: "N", ca: G, cb: Y }] } } },
+  { id: 15, name: "No.15 離れた2つのカーブ", cells: { "0_0": { segs: [{ a: "N", b: "W", ca: C, cb: G }] }, "0_1": { segs: [{ a: "S", b: "E", ca: M, cb: O }] } } },
+  { id: 16, name: "No.16 ダブル・クロス", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: C, cb: C }, { a: "W", b: "E", ca: Y, cb: Y }] }, "0_1": { segs: [{ a: "N", b: "S", ca: M, cb: M }, { a: "W", b: "E", ca: Y, cb: G }] } } },
+  { id: 17, name: "No.17 青・黄・黒の三重奏", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: C, cb: K }] }, "0_1": { segs: [{ a: "W", b: "S", ca: K, cb: Y }] } } },
+  { id: 18, name: "No.18 グランドフィナーレ", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: P, cb: K }, { a: "W", b: "E", ca: O, cb: G }] }, "0_1": { segs: [{ a: "W", b: "N", ca: G, cb: C }] } } }
 ];
 
+/* ============================================================
+   山札生成（原作どおり：ラインカード63枚 ＋ スケルトンカード35枚 ＝ 計98枚）
+   ============================================================ */
 function createDeck() {
   const deck = [];
   let seq = 1;
@@ -361,26 +392,41 @@ function createDeck() {
       deck.push({ id: `c${seq++}`, type, shape, ca, cb, heavy: type !== "line" });
     }
   };
-  [C, M, Y].forEach((col) => {
-    push("line", "straight", col, col, 4);
-    push("line", "curve", col, col, 5);
-  });
-  [P, G, O].forEach((col) => {
-    push("line", "straight", col, col, 1);
-    push("line", "curve", col, col, 2);
-  });
-  [C, M, Y].forEach((col) => {
-    push("skel", "straight", col, 0, 2);
-    push("skel", "curve", col, 0, 3);
-  });
-  [C, M, Y].forEach((col) => {
-    push("skel", "straight", col, col, 2);
-    push("skel", "curve", col, col, 2);
-  });
-  [C, M, Y].forEach((col) => {
-    push("cross", "straight", col, col, 2);
-    push("cross", "straight", col, 0, 1);
-  });
+
+  // --- ラインカード：合計 63枚 ---
+  // まっすぐな線（30枚）
+  [C, M, Y].forEach((col) => push("line", "straight", col, col, 6)); // 18枚
+  [P, G, O].forEach((col) => push("line", "straight", col, col, 3)); // 9枚
+  push("line", "straight", C, P, 1);
+  push("line", "straight", M, O, 1);
+  push("line", "straight", Y, G, 1); // 計30枚
+
+  // まがった線（33枚）
+  [C, M, Y].forEach((col) => push("line", "curve", col, col, 7)); // 21枚
+  [P, G, O].forEach((col) => push("line", "curve", col, col, 3)); // 9枚
+  push("line", "curve", C, G, 1);
+  push("line", "curve", M, P, 1);
+  push("line", "curve", Y, O, 1); // 計33枚
+
+  // --- スケルトンカード：合計 35枚 ---
+  // まっすぐな線（11枚：片側6枚＋両側5枚）
+  [C, M, Y].forEach((col) => push("skel", "straight", col, 0, 2)); // 6枚
+  push("skel", "straight", C, C, 2);
+  push("skel", "straight", M, M, 2);
+  push("skel", "straight", Y, Y, 1); // 5枚
+
+  // まがった線（14枚：片側9枚＋両側5枚）
+  [C, M, Y].forEach((col) => push("skel", "curve", col, 0, 3)); // 9枚
+  push("skel", "curve", C, C, 2);
+  push("skel", "curve", M, M, 2);
+  push("skel", "curve", Y, Y, 1); // 5枚
+
+  // 交差した線（10枚：両側7枚＋片側3枚）
+  push("cross", "straight", C, C, 3);
+  push("cross", "straight", M, M, 2);
+  push("cross", "straight", Y, Y, 2);
+  [C, M, Y].forEach((col) => push("cross", "straight", col, 0, 1)); // 3枚
+
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -434,7 +480,7 @@ function validatePlace({ board, r, c, selected, rot, flip }) {
   if (!exist) {
     if (selected.length === 1) {
       const card = selected[0];
-      if (card.type !== "line") return { ok: false, err: "「重」マークのカード単体では空マスに置けません。" };
+      if (card.type !== "line") return { ok: false, err: "スケルトンカード（重）単体では空マスに置けません。" };
       newSegs = [cardToSeg(card, rot, flip)];
       newLayers = [{ card, rot, flip }];
     } else {
@@ -563,25 +609,35 @@ function pathD(a, b) {
   return `M ${x1} ${y1} Q 50 50 ${x2} ${y2}`;
 }
 
-function renderSegSvg(seg, idx) {
+function renderSegSvg(seg, idx, isSkelPreview = false) {
   const colA = COLOR_INFO[seg.ca];
   const colB = COLOR_INFO[seg.cb];
   const gid = `g_${Math.random().toString(36).slice(2, 8)}_${idx}`;
   const [x1, y1] = PT[seg.a], [x2, y2] = PT[seg.b];
-  const strokeA = seg.ca === 0 ? "rgba(255,255,255,0.45)" : colA.hex;
-  const strokeB = seg.cb === 0 ? "rgba(255,255,255,0.45)" : colB.hex;
+  const strokeA = seg.ca === 0 ? "rgba(255,255,255,0.55)" : colA.hex;
+  const strokeB = seg.cb === 0 ? "rgba(255,255,255,0.55)" : colB.hex;
   const d = pathD(seg.a, seg.b);
 
-  const outline = `<path d="${d}" fill="none" stroke="${(seg.ca === 7 || seg.cb === 7) ? '#cbd5e1' : '#020617'}" stroke-width="20" stroke-linecap="butt"/>`;
+  const outlineColor = (seg.ca === 7 || seg.cb === 7) ? "#cbd5e1" : (isSkelPreview ? "rgba(255,255,255,0.22)" : "#020617");
+  const outline = `<path d="${d}" fill="none" stroke="${outlineColor}" stroke-width="20" stroke-linecap="butt"/>`;
   const grad = `<linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">
     <stop offset="0%" stop-color="${strokeA}"/><stop offset="48%" stop-color="${strokeA}"/>
     <stop offset="52%" stop-color="${strokeB}"/><stop offset="100%" stop-color="${strokeB}"/>
   </linearGradient>`;
-  const rope = `<path d="${d}" fill="none" stroke="url(#${gid})" stroke-width="14" stroke-linecap="butt"/>
-    <path d="${d}" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="14" stroke-dasharray="3 4"/>`;
+  const rope = `<path d="${d}" fill="none" stroke="url(#${gid})" stroke-width="14" stroke-linecap="butt" ${isSkelPreview ? 'stroke-opacity="0.88"' : ""}/>
+    <path d="${d}" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="14" stroke-dasharray="3 4"/>`;
 
-  const badge = (dir, info) => {
-    if (!info.short) return "";
+  const badge = (dir, info, val) => {
+    if (!info.short) {
+      if (isSkelPreview && val === 0) {
+        const [lx, ly] = LBL_PT[dir];
+        return `<g>
+          <rect x="${lx - 11}" y="${ly - 8}" width="22" height="15" rx="4" fill="rgba(255,255,255,0.25)" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2"/>
+          <text x="${lx}" y="${ly + 3}" text-anchor="middle" font-size="9" font-weight="800" fill="#f8fafc">透</text>
+        </g>`;
+      }
+      return "";
+    }
     const [lx, ly] = LBL_PT[dir];
     const bg = info.hex;
     const fg = (info.name === "黄" || info.name === "青" || info.name === "オレンジ") ? "#0f172a" : "#ffffff";
@@ -590,15 +646,17 @@ function renderSegSvg(seg, idx) {
       <text x="${lx}" y="${ly + 3}" text-anchor="middle" font-size="10" font-weight="900" fill="${fg}">${info.short}</text>
     </g>`;
   };
-  return `<defs>${grad}</defs>${outline}${rope}${badge(seg.a, colA)}${badge(seg.b, colB)}`;
+  return `<defs>${grad}</defs>${outline}${rope}${badge(seg.a, colA, seg.ca)}${badge(seg.b, colB, seg.cb)}`;
 }
 
-function renderCellSvg(segs, isCrossSkeletonPreview = false) {
+function renderCellSvg(segs, cardType = "line") {
   let inner = "";
-  if (isCrossSkeletonPreview) {
-    inner += `<path d="M 0 50 L 100 50" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="12" stroke-dasharray="4 3"/>`;
+  const isSkel = cardType !== "line";
+  if (cardType === "cross") {
+    inner += `<path d="M 0 50 L 100 50" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="14"/>
+      <path d="M 0 50 L 100 50" fill="none" stroke="rgba(15,23,42,0.35)" stroke-width="14" stroke-dasharray="4 4"/>`;
   }
-  (segs || []).forEach((s, i) => { inner += renderSegSvg(s, i); });
+  (segs || []).forEach((s, i) => { inner += renderSegSvg(s, i, isSkel); });
   return `<svg viewBox="0 0 100 100" width="100%" height="100%" style="display:block;">${inner}</svg>`;
 }
 
@@ -887,7 +945,7 @@ function renderLobby() {
 
 function renderBoardInto(containerEl, board, interactive = false, lastKey = null) {
   const keys = Object.keys(board || {});
-  let minR = 0, maxR = 0, minC = 0, maxC = 0;
+  let minR = 0, maxR = 0, minC = 0, maxC = 1;
   keys.forEach((k) => {
     const [r, c] = k.split("_").map(Number);
     if (r < minR) minR = r; if (r > maxR) maxR = r;
@@ -895,7 +953,7 @@ function renderBoardInto(containerEl, board, interactive = false, lastKey = null
   });
   minR -= 1; maxR += 1; minC -= 1; maxC += 1;
   while (maxR - minR + 1 < 5) { minR--; maxR++; }
-  while (maxC - minC + 1 < 5) { minC--; maxC++; }
+  while (maxC - minC + 1 < 6) { minC--; maxC++; }
 
   const cols = maxC - minC + 1;
   containerEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size, ${cellSize}px))`;
@@ -909,7 +967,12 @@ function renderBoardInto(containerEl, board, interactive = false, lastKey = null
       const div = document.createElement("div");
       div.className = "cell" + (cell?.fixed ? " fixed" : "") + (key === lastKey ? " last" : "") + (!interactive ? " readonly" : "");
       if (cell) {
-        div.innerHTML = renderCellSvg(cell.segs);
+        div.innerHTML = renderCellSvg(cell.segs, "line");
+        if (cell.fixed && key === "0_0") {
+          const t = document.createElement("span");
+          t.className = "cell-theme-lbl"; t.textContent = "お題";
+          div.appendChild(t);
+        }
         if (cell.hasHeavy) {
           const tag = document.createElement("span");
           tag.className = "cell-tag"; tag.textContent = "重";
@@ -979,18 +1042,21 @@ function renderHand(hand, canAct) {
 
   hand.forEach((card) => {
     const isSel = selectedHandIds.includes(card.id);
+    const isSkel = card.type !== "line";
     const el = document.createElement("div");
-    el.className = "hcard" + (isSel ? " sel" : "");
+    el.className = "hcard" + (isSkel ? " is-skel" : "") + (isSel ? " sel" : "");
     const rot = isSel ? rotSteps : 0;
     const flip = isSel ? flipEnds : false;
     const seg = cardToSeg(card, rot, flip);
-    const svg = renderCellSvg([seg], card.type === "cross");
+    const svg = renderCellSvg([seg], card.type);
     const cNameA = COLOR_INFO[seg.ca]?.name || "透明";
     const cNameB = COLOR_INFO[seg.cb]?.name || "透明";
     const typeLbl = card.type === "line" ? "ライン" : card.type === "cross" ? "交差スケ" : "スケルトン";
+    const colorText = cNameA === cNameB ? cNameA : `${cNameA}／${cNameB}`;
     el.innerHTML = `${card.heavy ? '<span class="heavy-mark">重</span>' : ""}
       <div class="svg-wrap">${svg}</div>
-      <div class="lbl">${typeLbl}<br>${cNameA === cNameB ? cNameA : cNameA + "／" + cNameB}</div>`;
+      <span class="type-pill">${typeLbl}</span>
+      <div class="lbl">${colorText}</div>`;
     el.onclick = () => {
       if (!canAct) return;
       if (isSel) {
