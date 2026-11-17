@@ -186,7 +186,7 @@
   <header class="header">
     <div class="brand">
       <span style="font-size:1.4rem;">➰</span>
-      <h1>ヒトスジナワ <small>Online v5</small></h1>
+      <h1>ヒトスジナワ <small>Online v6</small></h1>
     </div>
     <div class="row">
       <button id="btn-notify" class="btn btn-sm btn-outline">🔔 通知OFF</button>
@@ -246,7 +246,7 @@
         <span class="badge">ID: <strong id="g-id">----</strong></span>
         <span class="badge" id="g-sheet">お題: -</span>
         <span class="badge">山札: <strong id="g-deck">0</strong>枚</span>
-        <span class="badge" id="g-pass-streak">連続パス: 0</span>
+        <span class="badge hidden" id="g-pass-streak" style="border-color:#ef4444;color:#fca5a5;">連続パス: 0</span>
       </div>
       <div id="g-host-box" class="row hidden">
         <button id="btn-skip-off" class="btn btn-sm btn-warning hidden">不在プレイヤーをスキップ</button>
@@ -367,7 +367,7 @@
       <h3 style="margin-top:0;">ヒトスジナワ ルール</h3>
       <ul style="padding-left:18px;font-size:0.88rem;">
         <li><strong>クリア条件：</strong>2マス分のお題シートの途切れた線をすべてつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
-        <li><strong>ゲームオーバー：</strong>参加メンバー全員が1周連続でパスする（1人の時は山札0枚でパスする）とゲームオーバーになり、リプレイで振り返りができます。</li>
+        <li><strong>ゲームオーバー：</strong><strong>山札が0枚になった状態</strong>で、参加メンバー全員が1周連続でパスするとゲームオーバーになり、リプレイで振り返りができます。</li>
         <li><strong>色のルール：</strong>青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>。</li>
         <li><strong>通常のスケルトン（[重]）：</strong>すでに出してあるカードには重ねられません。<strong>手札の青・ピンク・黄のみのラインカードと2枚1組</strong>で空きマスに配置します（混色カード「色変不可」とは組めません）。</li>
         <li><strong>交差スケルトン（[重]）：</strong>2枚組では出せず、<strong>すでに盤面に置かれているまっすぐなラインカード（混色・2枚組で作った直線もOK）</strong>の上にのみ1枚重ねられます。</li>
@@ -1216,7 +1216,14 @@ function renderGame() {
   $("g-id").textContent = roomData.id;
   $("g-sheet").textContent = roomData.themeName || "-";
   $("g-deck").textContent = deck.length;
-  $("g-pass-streak").textContent = onlineCount >= 2 ? `連続パス: ${passStreak}/${onlineCount}` : `連続パス: ${passStreak}`;
+
+  const psBadge = $("g-pass-streak");
+  if (deck.length === 0) {
+    psBadge.classList.remove("hidden");
+    psBadge.textContent = `山札0・連続パス: ${passStreak}/${Math.max(1, onlineCount)}`;
+  } else {
+    psBadge.classList.add("hidden");
+  }
   $("g-host-box").classList.toggle("hidden", !isHost);
 
   const curPlayer = players[curUid];
@@ -1398,10 +1405,12 @@ $("btn-pass").onclick = async () => {
 
   const order = roomData.turnOrder || [];
   const players = roomData.players || {};
-  const onlineCount = order.filter((uid) => players[uid]?.online).length;
+  const onlineCount = Math.max(1, order.filter((uid) => players[uid]?.online).length);
   const deckLen = (roomData.deck || []).length;
-  const nextStreak = (roomData.passStreak || 0) + 1;
-  const isGameOver = onlineCount <= 1 ? (deckLen === 0 && nextStreak >= 1) : (nextStreak >= onlineCount);
+
+  // 山札が0枚のときだけ連続パスをカウントし、全員1周パスでゲームオーバー
+  const nextStreak = deckLen === 0 ? (roomData.passStreak || 0) + 1 : 0;
+  const isGameOver = deckLen === 0 && nextStreak >= onlineCount;
 
   const hist = [...(roomData.history || []), {
     type: "pass", uid: myUid, name: roomData.players[myUid].name, at: Date.now()
@@ -1488,7 +1497,7 @@ function renderResult() {
   tagEl.textContent = isOver ? "💀 GAME OVER 💀" : "🎉 CLEAR! 🎉";
   tagEl.classList.toggle("is-over", isOver);
   $("res-heading").textContent = isOver
-    ? "全員が1周パスし、手詰まりになりました…"
+    ? "山札がなくなり、全員が1周パスしました…"
     : "すべての線が一本につながりました！";
 
   $("clr-sheet").textContent = `使用お題：${roomData.themeName}`;
