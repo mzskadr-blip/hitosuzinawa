@@ -59,7 +59,6 @@
     .sub-panel h3 { margin: 0 0 6px; font-size: 1rem; }
     .muted { color: var(--muted); font-size: 0.82rem; }
     .banner-err { background: #7f1d1d; color: #fecaca; padding: 9px 12px; border-radius: 8px; margin-top: 10px; font-weight: 700; font-size: 0.86rem; }
-    .banner-ok { background: #14532d; color: #bbf7d0; padding: 9px 12px; border-radius: 8px; margin-top: 8px; font-weight: 700; font-size: 0.86rem; }
     .code-box {
       text-align: center; background: var(--panel2); border: 2px dashed #38bdf8;
       border-radius: 12px; padding: 14px; margin-bottom: 14px;
@@ -308,25 +307,19 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, update, onValue, onDisconnect, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-/* ============================================================
-   ★ここにご自身の Firebase 設定を貼り付けてください★
-   ============================================================ */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC2lS1WgJeMe_vli0jijqxxzoCJ0xqOSBk",
+  authDomain: "hitosuzinawa.firebaseapp.com",
+  databaseURL: "https://hitosuzinawa-default-rtdb.firebaseio.com",
+  projectId: "hitosuzinawa",
+  storageBucket: "hitosuzinawa.firebasestorage.app",
+  messagingSenderId: "1080188434500",
+  appId: "1:1080188434500:web:379fc9de12405009396411"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ============================================================
-   色定義（CMY 3bitマスク: 青=1, ピンク=2, 黄=4）
-   ============================================================ */
 const COLOR_INFO = {
   0: { name: "透明", short: "", hex: "#e2e8f0" },
   1: { name: "青", short: "青", hex: "#38bdf8" },
@@ -339,9 +332,6 @@ const COLOR_INFO = {
 };
 const C = 1, M = 2, Y = 4, P = 3, G = 5, O = 6, K = 7;
 
-/* ============================================================
-   18種類のお題シート（初期盤面: 座標 "r_c"）
-   ============================================================ */
 const THEMES = [
   { id: 1, name: "No.01 はじまりの青", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: C, cb: C }] } } },
   { id: 2, name: "No.02 ピンクのカーブ", cells: { "0_0": { segs: [{ a: "E", b: "S", ca: M, cb: M }] }, "2_2": { segs: [{ a: "N", b: "W", ca: M, cb: M }] } } },
@@ -363,9 +353,6 @@ const THEMES = [
   { id: 18, name: "No.18 グランドフィナーレ", cells: { "-1_-1": { segs: [{ a: "E", b: "S", ca: P, cb: K }] }, "0_0": { segs: [{ a: "N", b: "S", ca: O, cb: O }, { a: "W", b: "E", ca: G, cb: G }] }, "1_1": { segs: [{ a: "N", b: "W", ca: C, cb: M }] } } }
 ];
 
-/* ============================================================
-   山札生成（ライン + 片側スケルトン + 両側スケルトン + 交差スケルトン）
-   ============================================================ */
 function createDeck() {
   const deck = [];
   let seq = 1;
@@ -374,7 +361,6 @@ function createDeck() {
       deck.push({ id: `c${seq++}`, type, shape, ca, cb, heavy: type !== "line" });
     }
   };
-  // ラインカード（単体使用可）
   [C, M, Y].forEach((col) => {
     push("line", "straight", col, col, 4);
     push("line", "curve", col, col, 5);
@@ -383,17 +369,14 @@ function createDeck() {
     push("line", "straight", col, col, 1);
     push("line", "curve", col, col, 2);
   });
-  // スケルトンカード（片側色付き・もう片側透明）
   [C, M, Y].forEach((col) => {
     push("skel", "straight", col, 0, 2);
     push("skel", "curve", col, 0, 3);
   });
-  // スケルトンカード（両側色付き）
   [C, M, Y].forEach((col) => {
     push("skel", "straight", col, col, 2);
     push("skel", "curve", col, col, 2);
   });
-  // スケルトンカード（交差：片側 / 両側）
   [C, M, Y].forEach((col) => {
     push("cross", "straight", col, col, 2);
     push("cross", "straight", col, 0, 1);
@@ -405,9 +388,6 @@ function createDeck() {
   return deck;
 }
 
-/* ============================================================
-   幾何・色・接続・クリア判定ロジック
-   ============================================================ */
 const DIRS = ["N", "E", "S", "W"];
 const OPP = { N: "S", E: "W", S: "N", W: "E" };
 const DELTA = { N: [-1, 0], E: [0, 1], S: [1, 0], W: [0, -1] };
@@ -487,7 +467,6 @@ function validatePlace({ board, r, c, selected, rot, flip }) {
     const baseSeg = exist.segs[0];
     if (card.type === "skel") {
       if (baseLayer.card.shape !== card.shape) return { ok: false, err: "下のラインと同じ形（直線/曲線）を選んでください。" };
-      // 軸が一致する向きを探す
       let skSeg = cardToSeg(card, rot, flip);
       if (!sameEdgePair(baseSeg, skSeg)) {
         skSeg = cardToSeg(card, baseLayer.rot, flip);
@@ -507,7 +486,6 @@ function validatePlace({ board, r, c, selected, rot, flip }) {
     }
   }
 
-  // 既存盤面との接続＆色一致チェック
   let touches = 0;
   for (const dir of DIRS) {
     const [dr, dc] = DELTA[dir];
@@ -531,7 +509,6 @@ function validatePlace({ board, r, c, selected, rot, flip }) {
   return { ok: true, cell: { segs: newSegs, layers: newLayers, hasHeavy, fixed: false } };
 }
 
-/* クリア判定：1) 開いた端点が0  2) 全線分が1つの連結成分 */
 function checkClear(board) {
   const nodes = [];
   const nodeMap = new Map();
@@ -551,7 +528,7 @@ function checkClear(board) {
       const [dr, dc] = DELTA[endDir];
       const nbKey = `${n.r + dr}_${n.c + dc}`;
       const nbCell = board[nbKey];
-      if (!nbCell) return false; // 途切れた線がある
+      if (!nbCell) return false;
       const myCol = portColor(n.seg, endDir);
       let matched = null;
       (nbCell.segs || []).forEach((s2, idx2) => {
@@ -563,7 +540,6 @@ function checkClear(board) {
     }
   }
 
-  // BFSで連結成分が1つだけか確認（複数の輪を禁止）
   const visited = new Set([nodes[0].id]);
   const q = [nodes[0].id];
   while (q.length) {
@@ -578,9 +554,6 @@ function checkClear(board) {
   return visited.size === nodes.length;
 }
 
-/* ============================================================
-   SVGカード描画（縄風ライン＋両端の色文字ラベル）
-   ============================================================ */
 const PT = { N: [50, 0], E: [100, 50], S: [50, 100], W: [0, 50] };
 const LBL_PT = { N: [50, 15], E: [83, 53], S: [50, 91], W: [17, 53] };
 
@@ -588,14 +561,6 @@ function pathD(a, b) {
   const [x1, y1] = PT[a], [x2, y2] = PT[b];
   if (OPP[a] === b) return `M ${x1} ${y1} L ${x2} ${y2}`;
   return `M ${x1} ${y1} Q 50 50 ${x2} ${y2}`;
-}
-
-function halfPathD(endDir, otherDir) {
-  const [x, y] = PT[endDir];
-  if (OPP[endDir] === otherDir) return `M ${x} ${y} L 50 50`;
-  const [ox, oy] = PT[otherDir];
-  const mx = (x + 50) / 2, my = (y + 50) / 2;
-  return `M ${x} ${y} Q ${(x + 50)/2} ${(y + 50)/2} 50 50`;
 }
 
 function renderSegSvg(seg, idx) {
@@ -607,7 +572,6 @@ function renderSegSvg(seg, idx) {
   const strokeB = seg.cb === 0 ? "rgba(255,255,255,0.45)" : colB.hex;
   const d = pathD(seg.a, seg.b);
 
-  // 黒(7)は暗いので外側に明るい縁取り
   const outline = `<path d="${d}" fill="none" stroke="${(seg.ca === 7 || seg.cb === 7) ? '#cbd5e1' : '#020617'}" stroke-width="20" stroke-linecap="butt"/>`;
   const grad = `<linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">
     <stop offset="0%" stop-color="${strokeA}"/><stop offset="48%" stop-color="${strokeA}"/>
@@ -638,9 +602,6 @@ function renderCellSvg(segs, isCrossSkeletonPreview = false) {
   return `<svg viewBox="0 0 100 100" width="100%" height="100%" style="display:block;">${inner}</svg>`;
 }
 
-/* ============================================================
-   状態・Firebase・画面制御
-   ============================================================ */
 const UID_KEY = "hitosujinawa_uid_v1";
 let myUid = localStorage.getItem(UID_KEY);
 if (!myUid) {
@@ -657,8 +618,6 @@ let flipEnds = false;
 let cellSize = 74;
 let lastNotifiedTurnKey = null;
 let titleTimer = null;
-
-// リプレイ状態
 let repIdx = 0;
 let repTimer = null;
 
@@ -675,7 +634,6 @@ function showErr(elId, msg) {
   setTimeout(() => el.classList.add("hidden"), 4500);
 }
 
-// 通知音・Web通知
 function playChime() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -727,7 +685,6 @@ function clearTabFlash() {
   document.title = "ヒトスジナワ オンライン";
 }
 
-// 別画面から戻ったときに自動再同期＆タイトル復元
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     clearTabFlash();
@@ -739,9 +696,6 @@ window.addEventListener("focus", () => {
   if (roomData) renderAll();
 });
 
-/* ============================================================
-   部屋作成・参加・復帰
-   ============================================================ */
 async function generate4DigitId() {
   for (let i = 0; i < 20; i++) {
     const id = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
@@ -772,52 +726,54 @@ $("btn-create").onclick = async () => {
     await set(ref(db, `rooms/${id}`), initialRoom);
     subscribeRoom(id);
   } catch (e) {
-    showErr("home-err", "部屋の作成に失敗しました。Firebase設定を確認してください: " + e.message);
+    showErr("home-err", "部屋の作成に失敗しました（Realtime Databaseのルール・URLを確認してください）: " + e.message);
   }
 };
 
 $("btn-join").onclick = async () => {
-  const id = $("inp-room").value.trim();
-  if (!/^\d{4}$/.test(id)) return showErr("home-err", "招待IDは数字4ケタで入力してください。");
-  const snap = await get(ref(db, `rooms/${id}`));
-  if (!snap.exists()) return showErr("home-err", "その招待IDの部屋が見つかりません。");
+  try {
+    const id = $("inp-room").value.trim();
+    if (!/^\d{4}$/.test(id)) return showErr("home-err", "招待IDは数字4ケタで入力してください。");
+    const snap = await get(ref(db, `rooms/${id}`));
+    if (!snap.exists()) return showErr("home-err", "その招待IDの部屋が見つかりません。");
 
-  const data = snap.val();
-  const players = data.players || {};
+    const data = snap.val();
+    const players = data.players || {};
 
-  // すでに自分のUIDが登録済みなら即復帰
-  if (players[myUid]) {
-    await update(ref(db, `rooms/${id}/players/${myUid}`), { online: true, name: getPlayerName() });
-    subscribeRoom(id);
-    return;
-  }
+    if (players[myUid]) {
+      await update(ref(db, `rooms/${id}/players/${myUid}`), { online: true, name: getPlayerName() });
+      subscribeRoom(id);
+      return;
+    }
 
-  if (data.status === "lobby") {
-    const count = Object.keys(players).length;
-    if (count >= 8) return showErr("home-err", "この部屋は満員（8人）です。");
-    await set(ref(db, `rooms/${id}/players/${myUid}`), {
-      uid: myUid, name: getPlayerName(), online: true, order: count, hand: []
-    });
-    subscribeRoom(id);
-  } else {
-    // 進行中のゲーム：オフライン枠があれば復帰選択させる
-    const offList = Object.values(players).filter((p) => !p.online);
-    if (!offList.length) return showErr("home-err", "このゲームはすでに開始されています（離脱中の枠はありません）。");
-    $("reclaim-list").innerHTML = "";
-    offList.forEach((p) => {
-      const b = document.createElement("button");
-      b.className = "btn btn-primary btn-block";
-      b.textContent = `「${p.name}」として復帰する（手札 ${(p.hand || []).length}枚）`;
-      b.onclick = async () => {
-        myUid = p.uid;
-        localStorage.setItem(UID_KEY, myUid);
-        await update(ref(db, `rooms/${id}/players/${myUid}`), { online: true });
-        $("mod-reclaim").classList.add("hidden");
-        subscribeRoom(id);
-      };
-      $("reclaim-list").appendChild(b);
-    });
-    $("mod-reclaim").classList.remove("hidden");
+    if (data.status === "lobby") {
+      const count = Object.keys(players).length;
+      if (count >= 8) return showErr("home-err", "この部屋は満員（8人）です。");
+      await set(ref(db, `rooms/${id}/players/${myUid}`), {
+        uid: myUid, name: getPlayerName(), online: true, order: count, hand: []
+      });
+      subscribeRoom(id);
+    } else {
+      const offList = Object.values(players).filter((p) => !p.online);
+      if (!offList.length) return showErr("home-err", "このゲームはすでに開始されています（離脱中の枠はありません）。");
+      $("reclaim-list").innerHTML = "";
+      offList.forEach((p) => {
+        const b = document.createElement("button");
+        b.className = "btn btn-primary btn-block";
+        b.textContent = `「${p.name}」として復帰する（手札 ${(p.hand || []).length}枚）`;
+        b.onclick = async () => {
+          myUid = p.uid;
+          localStorage.setItem(UID_KEY, myUid);
+          await update(ref(db, `rooms/${id}/players/${myUid}`), { online: true });
+          $("mod-reclaim").classList.add("hidden");
+          subscribeRoom(id);
+        };
+        $("reclaim-list").appendChild(b);
+      });
+      $("mod-reclaim").classList.remove("hidden");
+    }
+  } catch (e) {
+    showErr("home-err", "参加に失敗しました: " + e.message);
   }
 };
 $("btn-reclaim-close").onclick = () => $("mod-reclaim").classList.add("hidden");
@@ -841,16 +797,12 @@ function subscribeRoom(id) {
   });
 }
 
-/* ============================================================
-   ホスト処理（ゲーム開始・リセット）
-   ============================================================ */
-async function startGame(isReset = false) {
+async function startGame() {
   const players = Object.values(roomData.players || {});
   if (!players.length) return;
   const deck = createDeck();
   const theme = THEMES[Math.floor(Math.random() * THEMES.length)];
 
-  // プレイ順決定（シャッフル）
   const shuffled = [...players].sort(() => Math.random() - 0.5);
   const nextPlayers = {};
   shuffled.forEach((p, idx) => {
@@ -884,9 +836,9 @@ async function startGame(isReset = false) {
   await update(ref(db, `rooms/${roomId}`), updates);
 }
 
-$("btn-start").onclick = () => startGame(false);
-$("btn-reset").onclick = () => { if (confirm("ゲームを最初からリセットしますか？")) startGame(true); };
-$("btn-clr-reset").onclick = () => startGame(true);
+$("btn-start").onclick = () => startGame();
+$("btn-reset").onclick = () => { if (confirm("ゲームを最初からリセットしますか？")) startGame(); };
+$("btn-clr-reset").onclick = () => startGame();
 
 $("btn-leave").onclick = async () => {
   if (roomId) await update(ref(db, `rooms/${roomId}/players/${myUid}`), { online: false });
@@ -901,9 +853,6 @@ $("btn-copy").onclick = () => {
   setTimeout(() => ($("btn-copy").textContent = "IDをコピー"), 1500);
 };
 
-/* ============================================================
-   全体レンダリング（statusに応じて自動画面切替）
-   ============================================================ */
 function renderAll() {
   if (!roomData) return;
   const st = roomData.status;
@@ -944,7 +893,6 @@ function renderBoardInto(containerEl, board, interactive = false, lastKey = null
     if (r < minR) minR = r; if (r > maxR) maxR = r;
     if (c < minC) minC = c; if (c > maxC) maxC = c;
   });
-  // 周囲に1マス拡張（最低5x5以上）
   minR -= 1; maxR += 1; minC -= 1; maxC += 1;
   while (maxR - minR + 1 < 5) { minR--; maxR++; }
   while (maxC - minC + 1 < 5) { minC--; maxC++; }
@@ -987,11 +935,9 @@ function renderGame() {
   $("g-deck").textContent = deck.length;
   $("g-host-box").classList.toggle("hidden", !isHost);
 
-  // オフライン手番の自動／手動スキップ判定
   const curPlayer = players[curUid];
   $("btn-skip-off").classList.toggle("hidden", !(isHost && curPlayer && !curPlayer.online));
 
-  // プレイヤー一覧
   $("g-players").innerHTML = "";
   order.forEach((uid) => {
     const p = players[uid];
@@ -1002,7 +948,6 @@ function renderGame() {
     $("g-players").appendChild(div);
   });
 
-  // 手番バナー＆通知
   const tb = $("g-turn");
   if (isMyTurn) {
     tb.className = "turn-bar mine";
@@ -1019,7 +964,6 @@ function renderGame() {
     tb.textContent = `${curPlayer ? curPlayer.name : "他のプレイヤー"} の手番です`;
   }
 
-  // もし山札が0枚ならドロー済み扱いにする
   const readyToPlay = isMyTurn && (roomData.hasDrawn || deck.length === 0);
   $("btn-draw").classList.toggle("hidden", !(isMyTurn && !roomData.hasDrawn && deck.length > 0));
   $("btn-pass").disabled = !readyToPlay;
@@ -1067,24 +1011,11 @@ function renderHand(hand, canAct) {
   $("rot-deg").textContent = rotSteps * 90;
 }
 
-/* ============================================================
-   プレイヤー操作（ドロー・回転・反転・配置・パス）
-   ============================================================ */
 $("btn-zoom-in").onclick = () => { cellSize = Math.min(110, cellSize + 10); renderAll(); };
 $("btn-zoom-out").onclick = () => { cellSize = Math.max(46, cellSize - 10); renderAll(); };
-
-$("btn-rot").onclick = () => {
-  rotSteps = (rotSteps + 1) % 4;
-  renderGame();
-};
-$("btn-flip").onclick = () => {
-  flipEnds = !flipEnds;
-  renderGame();
-};
-$("btn-clr").onclick = () => {
-  selectedHandIds = []; rotSteps = 0; flipEnds = false;
-  renderGame();
-};
+$("btn-rot").onclick = () => { rotSteps = (rotSteps + 1) % 4; renderGame(); };
+$("btn-flip").onclick = () => { flipEnds = !flipEnds; renderGame(); };
+$("btn-clr").onclick = () => { selectedHandIds = []; rotSteps = 0; flipEnds = false; renderGame(); };
 
 $("btn-draw").onclick = async () => {
   const deck = [...(roomData.deck || [])];
@@ -1166,9 +1097,6 @@ async function onCellTap(r, c) {
   });
 }
 
-/* ============================================================
-   クリア画面 & リプレイ機能
-   ============================================================ */
 function renderClear() {
   $("clr-sheet").textContent = `使用お題：${roomData.themeName}`;
   renderBoardInto($("clr-board"), roomData.board || {}, false, roomData.lastKey);
