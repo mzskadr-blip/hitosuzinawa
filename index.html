@@ -61,6 +61,7 @@
     .sub-panel h3 { margin: 0 0 6px; font-size: 1rem; }
     .muted { color: var(--muted); font-size: 0.82rem; }
     .banner-err { background: #7f1d1d; color: #fecaca; padding: 9px 12px; border-radius: 8px; margin-top: 8px; font-weight: 700; font-size: 0.86rem; }
+    .banner-hint { background: #2e1065; color: #e9d5ff; border: 1px solid #a855f7; padding: 8px 12px; border-radius: 8px; margin-top: 8px; font-weight: 700; font-size: 0.84rem; }
     .code-box {
       text-align: center; background: var(--panel2); border: 2px dashed #38bdf8;
       border-radius: 12px; padding: 14px; margin-bottom: 14px;
@@ -90,6 +91,7 @@
     .cell:hover { border-color: #38bdf8; }
     .cell.fixed { background: #141c2f; border-color: #60a5fa; cursor: default; }
     .cell.last { box-shadow: inset 0 0 0 2px #f59e0b; }
+    .cell.hint-cell { box-shadow: inset 0 0 0 3px #c084fc; background: #2e1065; }
     .cell.pending-ok { box-shadow: inset 0 0 0 3px #22c55e; background: #0b2219; }
     .cell.pending-ng { box-shadow: inset 0 0 0 3px #ef4444; background: #2a1015; }
     .cell.readonly { cursor: default; }
@@ -183,7 +185,7 @@
   <header class="header">
     <div class="brand">
       <span style="font-size:1.4rem;">➰</span>
-      <h1>ヒトスジナワ <small>Online</small></h1>
+      <h1>ヒトスジナワ <small>Online v2</small></h1>
     </div>
     <div class="row">
       <button id="btn-notify" class="btn btn-sm btn-outline">🔔 通知OFF</button>
@@ -263,7 +265,6 @@
       <div id="g-board" class="board-grid"></div>
     </div>
 
-    <!-- 仮置き操作バー -->
     <div id="pending-bar" class="pending-bar hidden">
       <div id="pending-status" style="font-size:0.86rem;font-weight:700;">仮置き中</div>
       <div class="row">
@@ -274,6 +275,7 @@
     </div>
 
     <div id="g-msg" class="banner-err hidden"></div>
+    <div id="g-hint-banner" class="banner-hint hidden"></div>
 
     <div class="hand-box">
       <div id="preview-box" class="preview-box hidden"></div>
@@ -284,6 +286,7 @@
           <button id="btn-draw" class="btn btn-sm btn-primary hidden">山札から1枚引く</button>
           <button id="btn-rot" class="btn btn-sm btn-outline" disabled>↻ 90°回転 (<span id="rot-deg">0</span>°)</button>
           <button id="btn-clr" class="btn btn-sm btn-outline" disabled>解除</button>
+          <button id="btn-hint" class="btn btn-sm btn-outline hidden">💡 置ける場所ヒント</button>
           <button id="btn-pass" class="btn btn-sm btn-warning" disabled>パス</button>
         </div>
       </div>
@@ -364,8 +367,8 @@
         <li><strong>クリア条件：</strong>2マス分のお題シートの途切れた線をすべてつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
         <li><strong>色のルール：</strong>青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>。通常スケルトンは青・ピンク・黄のみのラインにのみ重ねられます（紫・緑・オレンジを含むカードは「色変不可」）。</li>
         <li><strong>交差スケルトン（[重]）：</strong>2枚組では出せず、<strong>すでに盤面に置かれているまっすぐなラインカード（混色直線もOK）</strong>の上にのみ重ねられます。</li>
-        <li><strong>直線への突き当たり：</strong>カーブの壁に線を突き当てる置き方はできませんが、<strong>直線（重なし・お題でない）</strong>に対しては後から交差スケルトンを重ねられるため、端が青・ピンク・黄の線であれば突き当てて配置できます。</li>
-        <li><strong>パス制限：</strong>合法に置ける手がある場合はパスできません。出せる手が1つもないときのみパスできます。</li>
+        <li><strong>直線との交差予約：</strong>カーブの壁に線を突き当てる置き方はできませんが、<strong>直線（重なし）</strong>に対しては後から交差スケルトンを重ねられるため、青・ピンク・黄の線と直線の側面がぶつかる配置（どちらも向きOK）が可能です。</li>
+        <li><strong>パス制限：</strong>ラインカード・2枚組・通常スケルトンが置けるときはパスできません。出せる手が何もない時、または<strong>交差スケルトンしか置けない時</strong>はパスできます。</li>
       </ul>
       <button id="btn-rules-close" class="btn btn-primary btn-block">閉じる</button>
     </div>
@@ -431,46 +434,43 @@ function createDeck() {
     }
   };
 
-  // --- ラインカード：計 63枚 ---
   [C, M, Y].forEach((col) => {
-    push("line", "straight", col, col, 4); // 12枚
-    push("line", "curve", col, col, 4);    // 12枚
+    push("line", "straight", col, col, 4);
+    push("line", "curve", col, col, 4);
   });
   push("line", "straight", C, M, 3);
   push("line", "straight", C, Y, 3);
-  push("line", "straight", M, Y, 2); // 8枚
+  push("line", "straight", M, Y, 2);
   push("line", "curve", C, M, 2); push("line", "curve", M, C, 2);
   push("line", "curve", C, Y, 2); push("line", "curve", Y, C, 1);
-  push("line", "curve", M, Y, 2); push("line", "curve", Y, M, 1); // 10枚
+  push("line", "curve", M, Y, 2); push("line", "curve", Y, M, 1);
 
-  [P, G, O].forEach((col) => push("line", "straight", col, col, 1)); // 3枚
+  [P, G, O].forEach((col) => push("line", "straight", col, col, 1));
   push("line", "straight", C, P, 1); push("line", "straight", M, P, 1);
   push("line", "straight", C, G, 1); push("line", "straight", Y, G, 1);
   push("line", "straight", M, O, 1); push("line", "straight", Y, O, 1);
-  push("line", "straight", P, G, 1); // 7枚
+  push("line", "straight", P, G, 1);
 
-  [P, G, O].forEach((col) => push("line", "curve", col, col, 1)); // 3枚
+  [P, G, O].forEach((col) => push("line", "curve", col, col, 1));
   push("line", "curve", C, P, 1); push("line", "curve", P, C, 1);
   push("line", "curve", M, P, 1);
   push("line", "curve", C, G, 1); push("line", "curve", G, C, 1);
   push("line", "curve", Y, G, 1);
   push("line", "curve", M, O, 1);
-  push("line", "curve", O, Y, 1); // 8枚
+  push("line", "curve", O, Y, 1);
 
-  // --- スケルトンカード：計 35枚 ---
-  [C, M, Y].forEach((col) => push("skel", "straight", col, 0, 2)); // 6枚
+  [C, M, Y].forEach((col) => push("skel", "straight", col, 0, 2));
   push("skel", "straight", C, C, 2);
   push("skel", "straight", M, M, 2);
-  push("skel", "straight", Y, Y, 1); // 5枚
+  push("skel", "straight", Y, Y, 1);
 
   push("skel", "curve", C, 0, 2); push("skel", "curve", 0, C, 1);
   push("skel", "curve", M, 0, 2); push("skel", "curve", 0, M, 1);
-  push("skel", "curve", Y, 0, 1); push("skel", "curve", 0, Y, 2); // 9枚
+  push("skel", "curve", Y, 0, 1); push("skel", "curve", 0, Y, 2);
   push("skel", "curve", C, C, 2);
   push("skel", "curve", M, M, 2);
-  push("skel", "curve", Y, Y, 1); // 5枚
+  push("skel", "curve", Y, Y, 1);
 
-  // 交差スケルトン（すべて両側同色の青/ピンク/黄：計10枚）
   push("cross", "straight", C, C, 4);
   push("cross", "straight", M, M, 3);
   push("cross", "straight", Y, Y, 3);
@@ -619,6 +619,8 @@ function validatePlace({ board, r, c, selected, rot }) {
   }
 
   let touches = 0;
+  const selfCanCrossLater = !hasHeavy && newLayers.length === 1 && newLayers[0]?.card?.shape === "straight";
+
   for (const dir of DIRS) {
     const [dr, dc] = DELTA[dir];
     const nb = board[`${r + dr}_${c + dc}`];
@@ -626,17 +628,17 @@ function validatePlace({ board, r, c, selected, rot }) {
     if (!nb) continue;
     const nbPorts = (nb.segs || []).map((s) => portColor(s, OPP[dir])).filter((v) => v !== null);
 
-    // こちらに線がなく隣に線がある → 相手の開いた端を塞いでしまうためNG
     if (myPorts.length === 0 && nbPorts.length > 0) {
-      return { ok: false, err: "隣のカードの線を塞いでしまいます（↻回転で調整してください）。" };
+      if (!(selfCanCrossLater && PRIMARY_COLORS.has(nbPorts[0]))) {
+        return { ok: false, err: "隣のカードの線を塞いでしまいます（↻回転で調整してください）。" };
+      }
+      continue;
     }
-    // こちらに線があり、隣のその辺に線がない（壁に突き当たる）
     if (myPorts.length > 0 && nbPorts.length === 0) {
-      const canCrossLater = !nb.fixed && !nb.hasHeavy && nb.layers?.[0]?.card?.shape === "straight" && PRIMARY_COLORS.has(myPorts[0]);
-      if (!canCrossLater) {
+      const nbCanCrossLater = !nb.fixed && !nb.hasHeavy && nb.layers?.[0]?.card?.shape === "straight" && PRIMARY_COLORS.has(myPorts[0]);
+      if (!nbCanCrossLater) {
         return { ok: false, err: "隣のカード（カーブ等）の側面に線がぶつかってしまいます。" };
       }
-      // 隣の直線の壁に青/ピ/黄の端が突き当たる場合は配置許可（あとで交差スケルトンを重ねられる）
       continue;
     }
     if (myPorts.length > 0 && nbPorts.length > 0) {
@@ -652,23 +654,23 @@ function validatePlace({ board, r, c, selected, rot }) {
   return { ok: true, cell: { segs: newSegs, layers: newLayers, hasHeavy, fixed: false } };
 }
 
-/* 出せる合法手が1つでも残っているか判定（パス可否の制御用） */
-function hasAnyValidMove(board, hand) {
-  if (!hand || !hand.length) return false;
+function findFirstValidMove(board, hand, includeCross = true) {
+  if (!hand || !hand.length) return null;
 
-  // 1. 盤面の既存セルに重ねられるか（通常スケルトン・交差スケルトン）
   for (const [key, cell] of Object.entries(board)) {
     if (cell.fixed || cell.hasHeavy) continue;
     const [r, c] = key.split("_").map(Number);
     for (const card of hand) {
       if (card.type === "line") continue;
+      if (!includeCross && card.type === "cross") continue;
       for (let rot = 0; rot < 4; rot++) {
-        if (validatePlace({ board, r, c, selected: [card], rot }).ok) return true;
+        if (validatePlace({ board, r, c, selected: [card], rot }).ok) {
+          return { key, r, c, cards: [card], rot, desc: `盤面の (${r}, ${c}) に「${card.type === 'cross' ? '交差スケルトン' : 'スケルトン'}」を重ねられます` };
+        }
       }
     }
   }
 
-  // 2. 既存セルの隣接空きマスを収集
   const emptySet = new Set();
   for (const key of Object.keys(board)) {
     const [r, c] = key.split("_").map(Number);
@@ -683,24 +685,26 @@ function hasAnyValidMove(board, hand) {
 
   for (const nk of emptySet) {
     const [r, c] = nk.split("_").map(Number);
-    // 単体ラインカード
     for (const l of lines) {
       for (let rot = 0; rot < 4; rot++) {
-        if (validatePlace({ board, r, c, selected: [l], rot }).ok) return true;
+        if (validatePlace({ board, r, c, selected: [l], rot }).ok) {
+          return { key: nk, r, c, cards: [l], rot, desc: `マス (${r}, ${c}) に「ライン（${COLOR_INFO[l.ca].name}↔${COLOR_INFO[l.cb].name}）」を置けます` };
+        }
       }
     }
-    // 2枚組（青/ピ/黄ライン ＋ 通常スケルトン）
     for (const l of lines) {
       if (!canOverlayColorSkel(l)) continue;
       for (const s of skels) {
         if (l.shape !== s.shape) continue;
         for (let rot = 0; rot < 4; rot++) {
-          if (validatePlace({ board, r, c, selected: [l, s], rot }).ok) return true;
+          if (validatePlace({ board, r, c, selected: [l, s], rot }).ok) {
+            return { key: nk, r, c, cards: [l, s], rot, desc: `マス (${r}, ${c}) に「ライン＋スケルトン」の2枚組を置けます` };
+          }
         }
       }
     }
   }
-  return false;
+  return null;
 }
 
 function buildPreviewCell(board, r, c, selected, rot) {
@@ -853,6 +857,7 @@ let roomRef = null;
 let selectedHandIds = [];
 let rotSteps = 0;
 let pendingPos = null;
+let hintKey = null;
 let cellSize = 74;
 let lastNotifiedTurnKey = null;
 let titleTimer = null;
@@ -1037,7 +1042,7 @@ async function startGame() {
     board[k] = { segs: v.segs, fixed: true, layers: [], hasHeavy: false };
   });
 
-  selectedHandIds = []; rotSteps = 0; pendingPos = null;
+  selectedHandIds = []; rotSteps = 0; pendingPos = null; hintKey = null;
   await update(ref(db, `rooms/${roomId}`), {
     status: "playing", themeId: theme.id, themeName: theme.name, deck, board,
     players: nextPlayers, turnOrder: shuffled.map((p) => p.uid),
@@ -1092,7 +1097,7 @@ function renderLobby() {
   $("lob-wait").classList.toggle("hidden", isHost);
 }
 
-function renderBoardInto(containerEl, board, interactive = false, lastKey = null, pendOverlay = null) {
+function renderBoardInto(containerEl, board, interactive = false, lastKey = null, pendOverlay = null, hlKey = null) {
   const keys = Object.keys(board || {});
   let minR = 0, maxR = 0, minC = 0, maxC = 1;
   keys.forEach((k) => {
@@ -1118,6 +1123,7 @@ function renderBoardInto(containerEl, board, interactive = false, lastKey = null
       let cls = "cell";
       if (board[key]?.fixed) cls += " fixed";
       if (isPend) cls += pendOverlay.ok ? " pending-ok" : " pending-ng";
+      else if (key === hlKey) cls += " hint-cell";
       else if (key === lastKey) cls += " last";
       if (!interactive) cls += " readonly";
       div.className = cls;
@@ -1246,18 +1252,27 @@ function renderGame() {
     tb.className = "turn-bar";
     tb.textContent = `${curPlayer ? curPlayer.name : "他のプレイヤー"} の手番です`;
     pendingPos = null;
+    hintKey = null;
+    $("g-hint-banner").classList.add("hidden");
   }
 
   const readyToPlay = isMyTurn && (roomData.hasDrawn || deck.length === 0);
   $("btn-draw").classList.toggle("hidden", !(isMyTurn && !roomData.hasDrawn && deck.length > 0));
 
-  // 出せるカードがあるかチェックしてパスボタンを制御
-  const anyMove = readyToPlay ? hasAnyValidMove(board, hand) : false;
-  $("btn-pass").disabled = !(readyToPlay && !anyMove);
+  // 交差スケルトン以外の必須手があるときだけパス不可
+  const requiredMove = readyToPlay ? findFirstValidMove(board, hand, false) : null;
+  const anyMove = readyToPlay ? (requiredMove || findFirstValidMove(board, hand, true)) : null;
+  $("btn-pass").disabled = !(readyToPlay && !requiredMove);
+  $("btn-hint").classList.toggle("hidden", !(readyToPlay && anyMove));
+
   if (readyToPlay) {
-    $("g-hint").textContent = anyMove
-      ? "※ 配置できる手があるためパスできません（混色カードの「色変不可」には通常スケルトンは重ねられず、交差スケルトンのみ可）。"
-      : "✅ 出せるカード（合法手）がないため「パス」できます。";
+    if (requiredMove) {
+      $("g-hint").textContent = "※ 出せるカードがあるためパスできません（見つからない時は「💡 置ける場所ヒント」を押してください）。";
+    } else if (anyMove) {
+      $("g-hint").textContent = "✅ 交差スケルトンしか置けないため「パス」できます（盤面の直線に交差を置くことも可能です）。";
+    } else {
+      $("g-hint").textContent = "✅ 出せるカード（合法手）がないため「パス」できます。";
+    }
   } else {
     $("g-hint").textContent = "「色変不可」は混色を含むため通常スケルトンは重ねられません（直線なら交差スケルトンのみ可）。";
   }
@@ -1286,7 +1301,7 @@ function renderGame() {
     pbar.classList.add("hidden");
   }
 
-  renderBoardInto($("g-board"), board, readyToPlay, roomData.lastKey, pendOverlay);
+  renderBoardInto($("g-board"), board, readyToPlay, roomData.lastKey, pendOverlay, hintKey);
   renderPreviewBox(hand, readyToPlay);
   renderHand(hand, readyToPlay);
 }
@@ -1323,6 +1338,8 @@ function renderHand(hand, canAct) {
         selectedHandIds.push(card.id);
       }
       pendingPos = null;
+      hintKey = null;
+      $("g-hint-banner").classList.add("hidden");
       renderGame();
     };
     wrap.appendChild(el);
@@ -1341,6 +1358,21 @@ $("btn-clr").onclick = () => { selectedHandIds = []; rotSteps = 0; pendingPos = 
 
 $("btn-pend-rot").onclick = () => { rotSteps = (rotSteps + 1) % 4; renderGame(); };
 $("btn-pend-cancel").onclick = () => { pendingPos = null; renderGame(); };
+
+$("btn-hint").onclick = () => {
+  const board = roomData.board || {};
+  const hand = roomData.players[myUid]?.hand || [];
+  const move = findFirstValidMove(board, hand, false) || findFirstValidMove(board, hand, true);
+  if (!move) return;
+  hintKey = move.key;
+  selectedHandIds = move.cards.map((c) => c.id);
+  rotSteps = move.rot;
+  pendingPos = null;
+  const hb = $("g-hint-banner");
+  hb.textContent = `💡 ヒント（紫枠）：${move.desc}`;
+  hb.classList.remove("hidden");
+  renderGame();
+};
 
 $("btn-draw").onclick = async () => {
   const deck = [...(roomData.deck || [])];
@@ -1363,14 +1395,15 @@ function nextTurnIndex() {
 }
 
 $("btn-pass").onclick = async () => {
-  if (hasAnyValidMove(roomData.board || {}, roomData.players[myUid]?.hand || [])) {
+  if (findFirstValidMove(roomData.board || {}, roomData.players[myUid]?.hand || [], false)) {
     showErr("g-msg", "配置できるカードがあるためパスできません。");
     return;
   }
   const hist = [...(roomData.history || []), {
     type: "pass", uid: myUid, name: roomData.players[myUid].name, at: Date.now()
   }];
-  selectedHandIds = []; rotSteps = 0; pendingPos = null;
+  selectedHandIds = []; rotSteps = 0; pendingPos = null; hintKey = null;
+  $("g-hint-banner").classList.add("hidden");
   await update(ref(db, `rooms/${roomId}`), {
     history: hist, turnIndex: nextTurnIndex(), hasDrawn: false
   });
@@ -1425,7 +1458,8 @@ $("btn-pend-confirm").onclick = async () => {
     key, r, c, cell: res.cell, cards: selected, at: Date.now()
   }];
 
-  selectedHandIds = []; rotSteps = 0; pendingPos = null;
+  selectedHandIds = []; rotSteps = 0; pendingPos = null; hintKey = null;
+  $("g-hint-banner").classList.add("hidden");
   await update(ref(db, `rooms/${roomId}`), {
     [`board/${key}`]: res.cell,
     [`players/${myUid}/hand`]: nextHand,
