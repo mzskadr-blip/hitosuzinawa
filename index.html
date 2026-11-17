@@ -102,14 +102,12 @@
       position: absolute; bottom: 2px; left: 3px; font-size: 9px; font-weight: 800;
       color: #93c5fd; pointer-events: none;
     }
-    /* 仮置き確定バー */
     .pending-bar {
       margin-top: 8px; padding: 10px 12px; border-radius: 10px;
       background: #172554; border: 2px solid #38bdf8;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
     }
     .pending-bar.is-ng { background: #450a0a; border-color: #f87171; }
-    /* 合成プレビュー小窓 */
     .preview-box {
       background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
       padding: 8px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -279,11 +277,10 @@
     <div id="g-msg" class="banner-err hidden"></div>
 
     <div class="hand-box">
-      <!-- 合成プレビュー小窓 -->
       <div id="preview-box" class="preview-box hidden"></div>
 
       <div class="hand-top">
-        <span>手札（1枚、または単色ライン＋スケルトン2枚組）</span>
+        <span>手札（1枚、または青/ピ/黄のみのライン＋スケルトン2枚組）</span>
         <div class="row">
           <button id="btn-draw" class="btn btn-sm btn-primary hidden">山札から1枚引く</button>
           <button id="btn-rot" class="btn btn-sm btn-outline" disabled>↻ 90°回転 (<span id="rot-deg">0</span>°)</button>
@@ -293,7 +290,7 @@
         </div>
       </div>
       <div id="g-hand" class="hand-list"></div>
-      <div id="g-hint" class="muted" style="margin-top:4px;">「重不可」は混色・2色カードのため上にスケルトンを重ねられません。単色（青・ピンク・黄）にのみ重ねられます。</div>
+      <div id="g-hint" class="muted" style="margin-top:4px;">「重不可」は紫・緑・オレンジ（混色済み）を含むカードのため上にスケルトンを重ねられません。青・ピンク・黄のみのカード（2色ツートン含む）には重ねられます。</div>
     </div>
   </section>
 
@@ -367,10 +364,10 @@
       <h3 style="margin-top:0;">ヒトスジナワ ルール</h3>
       <ul style="padding-left:18px;font-size:0.88rem;">
         <li><strong>クリア条件：</strong>2マス分のお題シートの途切れた線をすべてつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
-        <li><strong>色のルール：</strong>基本は <strong>青・ピンク・黄</strong>。単色の基本カードにスケルトンを重ねると色が変わります。<br>
-          青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>（黒はありません）</li>
-        <li><strong>ラインカード（63枚）：</strong>単体で配置できます。すでに2色以上あるカードや混色カード（重不可）の上にはスケルトンを重ねられません。</li>
-        <li><strong>スケルトンカード（35枚・[重]）：</strong>単体では置けません。手札の単色ラインと<strong>2枚同時に選んで</strong>出すか、盤面の単色ライン（青・ピ・黄）に重ねます。</li>
+        <li><strong>色のルール：</strong>基本は <strong>青・ピンク・黄</strong>。青・ピンク・黄だけで構成されたラインカード（例：青↔黄や青↔ピンクも含む）にスケルトンを重ねると色が変わります。<br>
+          青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong></li>
+        <li><strong>ラインカード（63枚）：</strong>単体で配置できます。すでに混色（紫・緑・オレンジ）を含むカード（重不可）の上にはスケルトンを重ねられません。</li>
+        <li><strong>スケルトンカード（35枚・[重]）：</strong>単体では置けません。手札の青/ピンク/黄ラインと<strong>2枚同時に選んで</strong>出すか、盤面の青/ピンク/黄ラインに重ねます。</li>
         <li><strong>仮置き操作：</strong>盤面をタップすると仮置きになり、そのまま回転・反転・キャンセルしてから「配置を確定」できます。</li>
       </ul>
       <button id="btn-rules-close" class="btn btn-primary btn-block">閉じる</button>
@@ -395,7 +392,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* 6色（黒は発生しないため6色＋透明のみ） */
 const COLOR_INFO = {
   0: { name: "透明", short: "", hex: "#cbd5e1" },
   1: { name: "青", short: "青", hex: "#38bdf8" },
@@ -406,8 +402,8 @@ const COLOR_INFO = {
   6: { name: "オレンジ", short: "橙", hex: "#fb923c" }
 };
 const C = 1, M = 2, Y = 4, P = 3, G = 5, O = 6;
+const PRIMARY_COLORS = new Set([C, M, Y]);
 
-/* 18種類のお題シート（すべて横2マス分・6色構成） */
 const THEMES = [
   { id: 1, name: "No.01 はじまりの青と紫", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: C, cb: P }] }, "0_1": { segs: [{ a: "W", b: "N", ca: P, cb: M }] } } },
   { id: 2, name: "No.02 ピンクの曲がり道", cells: { "0_0": { segs: [{ a: "W", b: "E", ca: M, cb: M }] }, "0_1": { segs: [{ a: "W", b: "S", ca: M, cb: M }] } } },
@@ -429,9 +425,6 @@ const THEMES = [
   { id: 18, name: "No.18 グランドフィナーレ", cells: { "0_0": { segs: [{ a: "N", b: "S", ca: P, cb: M }, { a: "W", b: "E", ca: O, cb: G }] }, "0_1": { segs: [{ a: "W", b: "N", ca: G, cb: C }] } } }
 ];
 
-/* ============================================================
-   山札生成（ライン63枚[うち39枚グラデーション/混色] ＋ スケルトン35枚 ＝ 98枚）
-   ============================================================ */
 function createDeck() {
   const deck = [];
   let seq = 1;
@@ -442,52 +435,47 @@ function createDeck() {
   };
 
   // --- ラインカード：計 63枚 ---
-  // ① 単色基本3色（青・ピ・黄）：計24枚（スケルトンを重ねられる）
+  // ① 原色（青・ピ・黄）のみで構成（重OK）：42枚（単色24枚＋原色ツートン18枚）
   [C, M, Y].forEach((col) => {
     push("line", "straight", col, col, 4); // 12枚
     push("line", "curve", col, col, 4);    // 12枚
   });
-
-  // ② 両端で違う色＆混色（計39枚：スケルトンは重ねられない）
-  // まっすぐな線（19枚）
-  [P, G, O].forEach((col) => push("line", "straight", col, col, 1)); // 3枚
   push("line", "straight", C, M, 3);
   push("line", "straight", C, Y, 3);
-  push("line", "straight", M, Y, 3);
+  push("line", "straight", M, Y, 3); // 9枚
+  push("line", "curve", C, M, 3);
+  push("line", "curve", C, Y, 3);
+  push("line", "curve", M, Y, 3);    // 9枚
+
+  // ② 混色（紫・緑・オレンジ）を含むカード（重不可）：21枚
+  [P, G, O].forEach((col) => push("line", "straight", col, col, 1)); // 3枚
   push("line", "straight", C, P, 1);
   push("line", "straight", M, P, 1);
   push("line", "straight", C, G, 1);
   push("line", "straight", Y, G, 1);
   push("line", "straight", M, O, 1);
   push("line", "straight", Y, O, 1);
-  push("line", "straight", P, G, 1); // 計19枚
+  push("line", "straight", P, G, 1); // 計10枚
 
-  // まがった線（20枚）
   [P, G, O].forEach((col) => push("line", "curve", col, col, 1)); // 3枚
-  push("line", "curve", C, M, 3);
-  push("line", "curve", C, Y, 3);
-  push("line", "curve", M, Y, 3);
   push("line", "curve", C, P, 2);
   push("line", "curve", M, P, 1);
   push("line", "curve", C, G, 2);
   push("line", "curve", Y, G, 1);
   push("line", "curve", M, O, 1);
-  push("line", "curve", Y, O, 1); // 計20枚
+  push("line", "curve", Y, O, 1); // 計11枚
 
   // --- スケルトンカード：計 35枚 ---
-  // まっすぐな線（11枚）
   [C, M, Y].forEach((col) => push("skel", "straight", col, 0, 2)); // 6枚
   push("skel", "straight", C, C, 2);
   push("skel", "straight", M, M, 2);
   push("skel", "straight", Y, Y, 1); // 5枚
 
-  // まがった線（14枚）
   [C, M, Y].forEach((col) => push("skel", "curve", col, 0, 3)); // 9枚
   push("skel", "curve", C, C, 2);
   push("skel", "curve", M, M, 2);
   push("skel", "curve", Y, Y, 1); // 5枚
 
-  // 交差した線（10枚）
   push("cross", "straight", C, C, 3);
   push("cross", "straight", M, M, 2);
   push("cross", "straight", Y, Y, 2);
@@ -500,8 +488,9 @@ function createDeck() {
   return deck;
 }
 
-function isPrimarySolid(card) {
-  return !!card && card.type === "line" && card.ca === card.cb && (card.ca === C || card.ca === M || card.ca === Y);
+/* 原色（青・ピンク・黄）のみでできているラインカードか（青↔黄などの2色もOK、紫/緑/橙を含めばNG） */
+function canOverlaySkeleton(card) {
+  return !!card && card.type === "line" && PRIMARY_COLORS.has(card.ca) && PRIMARY_COLORS.has(card.cb);
 }
 
 const DIRS = ["N", "E", "S", "W"];
@@ -535,7 +524,6 @@ function overlaySeg(baseSeg, skelSeg) {
   return { a: baseSeg.a, b: baseSeg.b, ca: cA, cb: cB };
 }
 
-/* 選択中の手札1〜2枚を合成した結果（小窓・仮置き共用） */
 function composeSelection(selected, rot, flip) {
   if (!selected.length) return { ok: false, err: "手札からカードを選択してください。" };
   if (selected.length > 2) return { ok: false, err: "同時に選択できるのは2枚までです。" };
@@ -554,8 +542,8 @@ function composeSelection(selected, rot, flip) {
   if (!lineC || !heavyC) {
     return { ok: false, err: "2枚同時選択は「ラインカード＋スケルトンカード」の組み合わせのみ可能です。" };
   }
-  if (!isPrimarySolid(lineC)) {
-    return { ok: false, err: "混色・2色カードにはスケルトンを重ねられません（青・ピンク・黄の単色のみ可）。" };
+  if (!canOverlaySkeleton(lineC)) {
+    return { ok: false, err: "すでに混色（紫・緑・オレンジ）を含むカードにはスケルトンを重ねられません。" };
   }
   if (heavyC.type === "skel") {
     if (lineC.shape !== heavyC.shape) {
@@ -619,8 +607,8 @@ function validatePlace({ board, r, c, selected, rot, flip }) {
 
     const baseLayer = exist.layers[0];
     const baseSeg = exist.segs[0];
-    if (!isPrimarySolid(baseLayer.card)) {
-      return { ok: false, err: "このカード（混色・2色カード）にはスケルトンを重ねられません。" };
+    if (!canOverlaySkeleton(baseLayer.card)) {
+      return { ok: false, err: "このカード（紫・緑・オレンジを含む混色カード）にはスケルトンを重ねられません。" };
     }
     if (card.type === "skel") {
       if (baseLayer.card.shape !== card.shape) return { ok: false, err: "下のラインと同じ形（直線/曲線）を選んでください。" };
@@ -664,7 +652,6 @@ function validatePlace({ board, r, c, selected, rot, flip }) {
   return { ok: true, cell: { segs: newSegs, layers: newLayers, hasHeavy, fixed: false } };
 }
 
-/* 仮置き時の見た目を生成（接続エラーがあっても盤面上で回転・反転を試せるようにする） */
 function buildPreviewCell(board, r, c, selected, rot, flip) {
   const res = validatePlace({ board, r, c, selected, rot, flip });
   if (res.ok) return { ok: true, cell: res.cell };
@@ -679,7 +666,7 @@ function buildPreviewCell(board, r, c, selected, rot, flip) {
   }
   if (exist) {
     const baseLayer = exist.layers[0];
-    if (!isPrimarySolid(baseLayer.card)) return { ok: false, err: res.err, cell: null };
+    if (!canOverlaySkeleton(baseLayer.card)) return { ok: false, err: res.err, cell: null };
     const card = selected[0];
     if (card.type === "skel" && baseLayer.card.shape === card.shape) {
       let skSeg = cardToSeg(card, rot, flip);
@@ -814,7 +801,7 @@ let roomRef = null;
 let selectedHandIds = [];
 let rotSteps = 0;
 let flipEnds = false;
-let pendingPos = null; // { r, c } 仮置き座標
+let pendingPos = null;
 let cellSize = 74;
 let lastNotifiedTurnKey = null;
 let titleTimer = null;
@@ -1119,8 +1106,8 @@ function renderPreviewBox(hand, canAct) {
     const cA = COLOR_INFO[seg.ca]?.name || "透明";
     const cB = COLOR_INFO[seg.cb]?.name || "透明";
     const desc = c0.type === "line"
-      ? (isPrimarySolid(c0) ? "単体配置OK／盤面や手札のスケルトンを重ねられます" : "単体配置OK（※混色・2色のためスケルトンは重ねられません）")
-      : "単体では置けません。もう1枚「単色ライン」を選ぶか、盤面の青/ピ/黄ラインをタップして重ねてください。";
+      ? (canOverlaySkeleton(c0) ? "単体配置OK／盤面や手札のスケルトンを重ねられます" : "単体配置OK（※混色を含むためスケルトンは重ねられません）")
+      : "単体では置けません。もう1枚「青/ピンク/黄のみのライン」を選ぶか、盤面の該当ラインをタップして重ねてください。";
     box.innerHTML = `
       <div class="preview-mini ${c0.type !== 'line' ? 'is-skel' : ''}">${renderCellSvg([seg], c0.type)}</div>
       <div class="preview-info">
@@ -1252,7 +1239,7 @@ function renderHand(hand, canAct) {
     const cNameB = COLOR_INFO[seg.cb]?.name || "透明";
     const typeLbl = card.type === "line" ? "ライン" : card.type === "cross" ? "交差スケ" : "スケルトン";
     const colorText = cNameA === cNameB ? cNameA : `${cNameA}／${cNameB}`;
-    const noSkel = card.type === "line" && !isPrimarySolid(card);
+    const noSkel = card.type === "line" && !canOverlaySkeleton(card);
 
     el.innerHTML = `${card.heavy ? '<span class="heavy-mark">重</span>' : ""}
       ${noSkel ? '<span class="no-skel-mark">重不可</span>' : ""}
@@ -1324,7 +1311,6 @@ $("btn-skip-off").onclick = async () => {
   await update(ref(db, `rooms/${roomId}`), { turnIndex: nextTurnIndex(), hasDrawn: false });
 };
 
-/* タップ時は「仮置き」＋つながる向きがあれば自動で合わせる */
 function onCellTap(r, c) {
   const hand = roomData.players[myUid]?.hand || [];
   const selected = hand.filter((x) => selectedHandIds.includes(x.id));
@@ -1338,7 +1324,6 @@ function onCellTap(r, c) {
     showErr("g-msg", curCheck.err);
     return;
   }
-  // 今の向きでNGなら、つながる向き・反転を自動探索してセット
   if (!curCheck.ok) {
     outer: for (let f = 0; f < 2; f++) {
       const testFlip = f === 0 ? flipEnds : !flipEnds;
@@ -1357,7 +1342,6 @@ function onCellTap(r, c) {
   renderGame();
 }
 
-/* 「配置を確定」ボタン押下で Firebase へ送信 */
 $("btn-pend-confirm").onclick = async () => {
   if (!pendingPos) return;
   const { r, c } = pendingPos;
