@@ -170,6 +170,7 @@
     }
     .clear-title { text-align: center; margin-bottom: 10px; }
     .clear-title .tag { display: inline-block; background: #f59e0b; color: #0f172a; font-weight: 900; padding: 4px 14px; border-radius: 999px; margin-bottom: 6px; }
+    .clear-title .tag.is-over { background: #ef4444; color: #ffffff; }
     .chip-list { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 6px 0; }
     .chip-list li { background: var(--panel2); border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px; font-size: 0.82rem; font-weight: 700; }
     .replay-log { max-height: 170px; overflow-y: auto; background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px 8px 26px; margin: 8px 0 0; font-size: 0.82rem; }
@@ -185,7 +186,7 @@
   <header class="header">
     <div class="brand">
       <span style="font-size:1.4rem;">➰</span>
-      <h1>ヒトスジナワ <small>Online v2</small></h1>
+      <h1>ヒトスジナワ <small>Online v5</small></h1>
     </div>
     <div class="row">
       <button id="btn-notify" class="btn btn-sm btn-outline">🔔 通知OFF</button>
@@ -245,6 +246,7 @@
         <span class="badge">ID: <strong id="g-id">----</strong></span>
         <span class="badge" id="g-sheet">お題: -</span>
         <span class="badge">山札: <strong id="g-deck">0</strong>枚</span>
+        <span class="badge" id="g-pass-streak">連続パス: 0</span>
       </div>
       <div id="g-host-box" class="row hidden">
         <button id="btn-skip-off" class="btn btn-sm btn-warning hidden">不在プレイヤーをスキップ</button>
@@ -295,12 +297,12 @@
     </div>
   </section>
 
-  <!-- 4. クリア画面 -->
+  <!-- 4. 結果画面（クリア / ゲームオーバー共用） -->
   <section id="scr-clear" class="screen">
     <div class="card-box">
       <div class="clear-title">
-        <div class="tag">🎉 CLEAR! 🎉</div>
-        <h2 style="margin:4px 0;">すべての線が一本につながりました！</h2>
+        <div id="res-tag" class="tag">🎉 CLEAR! 🎉</div>
+        <h2 id="res-heading" style="margin:4px 0;">すべての線が一本につながりました！</h2>
         <p id="clr-sheet" class="muted"></p>
       </div>
       <div class="board-scroll" style="max-height:46vh;">
@@ -312,7 +314,7 @@
         <div id="clr-stats" class="muted" style="margin-top:6px;"></div>
       </div>
       <div class="row" style="justify-content:center;">
-        <button id="btn-open-rep" class="btn btn-secondary">▶ リプレイを見る</button>
+        <button id="btn-open-rep" class="btn btn-secondary">▶ リプレイを見る（振り返り）</button>
         <button id="btn-clr-reset" class="btn btn-primary hidden">新しいゲームを始める</button>
       </div>
     </div>
@@ -322,8 +324,8 @@
   <section id="scr-replay" class="screen">
     <div class="card-box">
       <div class="topbar">
-        <h2 style="margin:0;font-size:1.1rem;">リプレイ再生</h2>
-        <button id="btn-close-rep" class="btn btn-sm btn-outline">クリア画面へ戻る</button>
+        <h2 style="margin:0;font-size:1.1rem;">リプレイ再生（振り返り）</h2>
+        <button id="btn-close-rep" class="btn btn-sm btn-outline">結果画面へ戻る</button>
       </div>
       <div class="turn-bar" style="display:flex;justify-content:space-between;font-size:0.82rem;">
         <span id="rep-step">0 / 0 手目</span>
@@ -365,10 +367,12 @@
       <h3 style="margin-top:0;">ヒトスジナワ ルール</h3>
       <ul style="padding-left:18px;font-size:0.88rem;">
         <li><strong>クリア条件：</strong>2マス分のお題シートの途切れた線をすべてつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
-        <li><strong>色のルール：</strong>青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>。通常スケルトンは青・ピンク・黄のみのラインにのみ重ねられます（紫・緑・オレンジを含むカードは「色変不可」）。</li>
-        <li><strong>交差スケルトン（[重]）：</strong>2枚組では出せず、<strong>すでに盤面に置かれているまっすぐなラインカード（混色直線もOK）</strong>の上にのみ重ねられます。</li>
-        <li><strong>直線との交差予約：</strong>カーブの壁に線を突き当てる置き方はできませんが、<strong>直線（重なし）</strong>に対しては後から交差スケルトンを重ねられるため、青・ピンク・黄の線と直線の側面がぶつかる配置（どちらも向きOK）が可能です。</li>
-        <li><strong>パス制限：</strong>ラインカード・2枚組・通常スケルトンが置けるときはパスできません。出せる手が何もない時、または<strong>交差スケルトンしか置けない時</strong>はパスできます。</li>
+        <li><strong>ゲームオーバー：</strong>参加メンバー全員が1周連続でパスする（1人の時は山札0枚でパスする）とゲームオーバーになり、リプレイで振り返りができます。</li>
+        <li><strong>色のルール：</strong>青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>。</li>
+        <li><strong>通常のスケルトン（[重]）：</strong>すでに出してあるカードには重ねられません。<strong>手札の青・ピンク・黄のみのラインカードと2枚1組</strong>で空きマスに配置します（混色カード「色変不可」とは組めません）。</li>
+        <li><strong>交差スケルトン（[重]）：</strong>2枚組では出せず、<strong>すでに盤面に置かれているまっすぐなラインカード（混色・2枚組で作った直線もOK）</strong>の上にのみ1枚重ねられます。</li>
+        <li><strong>直線との交差予約：</strong>カーブの壁に線を突き当てる置き方はできませんが、<strong>直線（まだ交差していない直線）</strong>に対しては後から交差スケルトンを重ねられるため、青・ピンク・黄の線と直線の側面がぶつかる配置が可能です。</li>
+        <li><strong>パス制限：</strong>ラインカードや2枚組が置けるときはパスできません。出せる手が何もない時、または<strong>交差スケルトンしか置けない時</strong>はパスできます。</li>
       </ul>
       <button id="btn-rules-close" class="btn btn-primary btn-block">閉じる</button>
     </div>
@@ -486,6 +490,13 @@ function canOverlayColorSkel(card) {
   return !!card && card.type === "line" && PRIMARY_COLORS.has(card.ca) && PRIMARY_COLORS.has(card.cb);
 }
 
+function isCrossableStraightCell(cell) {
+  if (!cell || cell.fixed) return false;
+  const isCrossed = !!cell.hasCross || (cell.segs && cell.segs.length >= 2);
+  if (isCrossed) return false;
+  return cell.layers?.[0]?.card?.shape === "straight";
+}
+
 const DIRS = ["N", "E", "S", "W"];
 const OPP = { N: "S", E: "W", S: "N", W: "E" };
 const DELTA = { N: [-1, 0], E: [0, 1], S: [1, 0], W: [0, -1] };
@@ -564,6 +575,7 @@ function validatePlace({ board, r, c, selected, rot }) {
   let newSegs = null;
   let newLayers = exist ? [...(exist.layers || [])] : [];
   let hasHeavy = exist ? !!exist.hasHeavy : false;
+  let hasCross = exist ? (!!exist.hasCross || (exist.segs && exist.segs.length >= 2)) : false;
 
   if (!exist) {
     if (selected.length === 1) {
@@ -573,7 +585,7 @@ function validatePlace({ board, r, c, selected, rot }) {
           ok: false,
           err: card.type === "cross"
             ? "交差スケルトンはすでに盤面にあるまっすぐな線にのみ重ねられます。"
-            : "スケルトンカード（重）単体では空マスに置けません。"
+            : "通常のスケルトンカードは単体では置けません。手札のラインカードと2枚1組で配置してください。"
         };
       }
       newSegs = comp.segs;
@@ -584,42 +596,32 @@ function validatePlace({ board, r, c, selected, rot }) {
       hasHeavy = true;
     }
   } else {
-    if (selected.length !== 1) return { ok: false, err: "すでに置かれているカードには1枚だけ重ねられます。" };
+    if (selected.length !== 1) return { ok: false, err: "すでに置かれているカードには交差スケルトン1枚だけ重ねられます。" };
     const card = selected[0];
-    if (card.type === "line") return { ok: false, err: "すでにカードがあるマスにはラインカードを重ねられません。" };
-    if (hasHeavy || exist.layers.length >= 2) return { ok: false, err: "同じ場所には「重」カードは1枚までしか重ねられません。" };
+    if (card.type !== "cross") {
+      return {
+        ok: false,
+        err: card.type === "skel"
+          ? "通常のスケルトンカードはすでに出してあるカードの上には配置できません（手札のラインと2枚組で空きマスに出してください）。"
+          : "すでにカードがあるマスにはラインカードを重ねられません。"
+      };
+    }
+    if (hasCross) return { ok: false, err: "この場所にはすでに交差スケルトンが重ねられています。" };
 
     const baseLayer = exist.layers[0];
     const baseSeg = exist.segs[0];
-
-    if (card.type === "skel") {
-      if (!canOverlayColorSkel(baseLayer.card)) {
-        return { ok: false, err: "混色（紫・緑・オレンジ）を含むカードには通常スケルトンを重ねられません（交差スケルトンのみ可）。" };
-      }
-      if (baseLayer.card.shape !== card.shape) return { ok: false, err: "下のラインと同じ形（直線/曲線）を選んでください。" };
-      let skSeg = cardToSeg(card, rot);
-      let useRot = rot;
-      if (!sameEdgePair(baseSeg, skSeg)) {
-        skSeg = cardToSeg(card, baseLayer.rot);
-        useRot = baseLayer.rot;
-      }
-      if (!sameEdgePair(baseSeg, skSeg)) return { ok: false, err: "下の線の向きと一致するように回転させてください。" };
-      newSegs = [overlaySeg(baseSeg, skSeg)];
-      newLayers.push({ card, rot: useRot });
-      hasHeavy = true;
-    } else if (card.type === "cross") {
-      if (baseLayer.card.shape !== "straight") return { ok: false, err: "交差スケルトンはまっすぐなラインカードの上にのみ重ねられます。" };
-      const perpRot = (baseLayer.rot + 1) % 4;
-      const useRot = (rot % 2 === perpRot % 2) ? rot : perpRot;
-      const crossSeg = cardToSeg(card, useRot);
-      newSegs = [baseSeg, crossSeg];
-      newLayers.push({ card, rot: useRot });
-      hasHeavy = true;
-    }
+    if (baseLayer.card.shape !== "straight") return { ok: false, err: "交差スケルトンはまっすぐなラインカードの上にのみ重ねられます。" };
+    const perpRot = (baseLayer.rot + 1) % 4;
+    const useRot = (rot % 2 === perpRot % 2) ? rot : perpRot;
+    const crossSeg = cardToSeg(card, useRot);
+    newSegs = [baseSeg, crossSeg];
+    newLayers.push({ card, rot: useRot });
+    hasHeavy = true;
+    hasCross = true;
   }
 
   let touches = 0;
-  const selfCanCrossLater = !hasHeavy && newLayers.length === 1 && newLayers[0]?.card?.shape === "straight";
+  const selfCanCrossLater = !hasCross && newLayers[0]?.card?.shape === "straight";
 
   for (const dir of DIRS) {
     const [dr, dc] = DELTA[dir];
@@ -635,9 +637,8 @@ function validatePlace({ board, r, c, selected, rot }) {
       continue;
     }
     if (myPorts.length > 0 && nbPorts.length === 0) {
-      const nbCanCrossLater = !nb.fixed && !nb.hasHeavy && nb.layers?.[0]?.card?.shape === "straight" && PRIMARY_COLORS.has(myPorts[0]);
-      if (!nbCanCrossLater) {
-        return { ok: false, err: "隣のカード（カーブ等）の側面に線がぶつかってしまいます。" };
+      if (!(isCrossableStraightCell(nb) && PRIMARY_COLORS.has(myPorts[0]))) {
+        return { ok: false, err: "隣のカード（カーブや交差済み等）の側面に線がぶつかってしまいます。" };
       }
       continue;
     }
@@ -651,21 +652,22 @@ function validatePlace({ board, r, c, selected, rot }) {
   if (!exist && touches === 0) {
     return { ok: false, err: "必ず既存の線と1箇所以上つながる場所に配置してください。" };
   }
-  return { ok: true, cell: { segs: newSegs, layers: newLayers, hasHeavy, fixed: false } };
+  return { ok: true, cell: { segs: newSegs, layers: newLayers, hasHeavy, hasCross, fixed: false } };
 }
 
 function findFirstValidMove(board, hand, includeCross = true) {
   if (!hand || !hand.length) return null;
 
-  for (const [key, cell] of Object.entries(board)) {
-    if (cell.fixed || cell.hasHeavy) continue;
-    const [r, c] = key.split("_").map(Number);
-    for (const card of hand) {
-      if (card.type === "line") continue;
-      if (!includeCross && card.type === "cross") continue;
-      for (let rot = 0; rot < 4; rot++) {
-        if (validatePlace({ board, r, c, selected: [card], rot }).ok) {
-          return { key, r, c, cards: [card], rot, desc: `盤面の (${r}, ${c}) に「${card.type === 'cross' ? '交差スケルトン' : 'スケルトン'}」を重ねられます` };
+  if (includeCross) {
+    for (const [key, cell] of Object.entries(board)) {
+      if (!isCrossableStraightCell(cell)) continue;
+      const [r, c] = key.split("_").map(Number);
+      for (const card of hand) {
+        if (card.type !== "cross") continue;
+        for (let rot = 0; rot < 4; rot++) {
+          if (validatePlace({ board, r, c, selected: [card], rot }).ok) {
+            return { key, r, c, cards: [card], rot, desc: `盤面の (${r}, ${c}) に「交差スケルトン」を重ねられます` };
+          }
         }
       }
     }
@@ -716,25 +718,15 @@ function buildPreviewCell(board, r, c, selected, rot) {
   if (!exist && selected.length === 1 && selected[0].type !== "line") {
     return { ok: false, err: res.err, cell: null };
   }
-  if (exist && (exist.fixed || exist.hasHeavy || selected.length !== 1 || selected[0].type === "line")) {
+  if (exist && (!isCrossableStraightCell(exist) || selected.length !== 1 || selected[0].type !== "cross")) {
     return { ok: false, err: res.err, cell: null };
   }
   if (exist) {
     const baseLayer = exist.layers[0];
     const card = selected[0];
-    if (card.type === "skel") {
-      if (!canOverlayColorSkel(baseLayer.card) || baseLayer.card.shape !== card.shape) return { ok: false, err: res.err, cell: null };
-      let skSeg = cardToSeg(card, rot);
-      if (!sameEdgePair(exist.segs[0], skSeg)) skSeg = cardToSeg(card, baseLayer.rot);
-      return { ok: false, err: res.err, cell: { segs: [overlaySeg(exist.segs[0], skSeg)], hasHeavy: true } };
-    }
-    if (card.type === "cross") {
-      if (baseLayer.card.shape !== "straight") return { ok: false, err: res.err, cell: null };
-      const perpRot = (baseLayer.rot + 1) % 4;
-      const useRot = (rot % 2 === perpRot % 2) ? rot : perpRot;
-      return { ok: false, err: res.err, cell: { segs: [exist.segs[0], cardToSeg(card, useRot)], hasHeavy: true } };
-    }
-    return { ok: false, err: res.err, cell: null };
+    const perpRot = (baseLayer.rot + 1) % 4;
+    const useRot = (rot % 2 === perpRot % 2) ? rot : perpRot;
+    return { ok: false, err: res.err, cell: { segs: [exist.segs[0], cardToSeg(card, useRot)], hasHeavy: true, hasCross: true } };
   }
   return { ok: false, err: res.err, cell: { segs: comp.segs, hasHeavy: selected.length === 2 } };
 }
@@ -1039,14 +1031,14 @@ async function startGame() {
 
   const board = {};
   Object.entries(theme.cells).forEach(([k, v]) => {
-    board[k] = { segs: v.segs, fixed: true, layers: [], hasHeavy: false };
+    board[k] = { segs: v.segs, fixed: true, layers: [], hasHeavy: false, hasCross: false };
   });
 
   selectedHandIds = []; rotSteps = 0; pendingPos = null; hintKey = null;
   await update(ref(db, `rooms/${roomId}`), {
     status: "playing", themeId: theme.id, themeName: theme.name, deck, board,
     players: nextPlayers, turnOrder: shuffled.map((p) => p.uid),
-    turnIndex: 0, hasDrawn: false, lastKey: null, history: [], clearedAt: null
+    turnIndex: 0, hasDrawn: false, passStreak: 0, lastKey: null, history: [], endedAt: null
   });
 }
 
@@ -1075,9 +1067,9 @@ function renderAll() {
     if ($("scr-replay").classList.contains("active")) return;
     showScreen("game");
     renderGame();
-  } else if (st === "cleared") {
+  } else if (st === "cleared" || st === "gameover") {
     if (!$("scr-replay").classList.contains("active")) showScreen("clear");
-    renderClear();
+    renderResult();
   }
 }
 
@@ -1165,12 +1157,12 @@ function renderPreviewBox(hand, canAct) {
     let desc = "";
     if (c0.type === "line") {
       desc = canOverlayColorSkel(c0)
-        ? "単体配置OK／通常スケルトン・交差スケルトン両方重ねられます"
-        : "単体配置OK（※混色を含むため通常スケルトンは不可／直線なら交差スケルトンは重ねられます）";
+        ? "単体配置OK／手札の通常スケルトンと2枚組にもできます"
+        : "単体配置OK（※混色を含むため通常スケルトンと組めません／直線なら後から交差可）";
     } else if (c0.type === "cross") {
-      desc = "単体では置けません。すでに盤面に置かれている「まっすぐなラインカード」をタップして重ねてください。";
+      desc = "単体・2枚組では出せません。すでに盤面に置かれている「まっすぐなラインカード（2枚組直線も可）」をタップして重ねてください。";
     } else {
-      desc = "単体では置けません。手札の「青/ピンク/黄ライン」をもう1枚選ぶか、盤面の該当ラインをタップして重ねてください。";
+      desc = "単体でも場のカードの上にも置けません。手札の「青/ピンク/黄ライン」をもう1枚選んで2枚組で空きマスに出してください。";
     }
     box.innerHTML = `
       <div class="preview-mini ${c0.type !== 'line' ? 'is-skel' : ''}">${renderCellSvg([seg], c0.type)}</div>
@@ -1189,7 +1181,7 @@ function renderPreviewBox(hand, canAct) {
         <div class="preview-result">${renderCellSvg(comp.segs, "line")}</div>
         <div class="preview-info">
           <div style="font-weight:800;color:#4ade80;">✅ 合成結果：${lbls}</div>
-          <div class="muted">盤面のマスをタップして仮置きできます（90°回転も反映されます）。</div>
+          <div class="muted">盤面の空きマスをタップして仮置きできます（90°回転も反映されます）。</div>
         </div>`;
     } else {
       resHtml = `
@@ -1218,10 +1210,13 @@ function renderGame() {
   const deck = roomData.deck || [];
   const hand = players[myUid]?.hand || [];
   const board = roomData.board || {};
+  const onlineCount = order.filter((uid) => players[uid]?.online).length;
+  const passStreak = roomData.passStreak || 0;
 
   $("g-id").textContent = roomData.id;
   $("g-sheet").textContent = roomData.themeName || "-";
   $("g-deck").textContent = deck.length;
+  $("g-pass-streak").textContent = onlineCount >= 2 ? `連続パス: ${passStreak}/${onlineCount}` : `連続パス: ${passStreak}`;
   $("g-host-box").classList.toggle("hidden", !isHost);
 
   const curPlayer = players[curUid];
@@ -1259,7 +1254,6 @@ function renderGame() {
   const readyToPlay = isMyTurn && (roomData.hasDrawn || deck.length === 0);
   $("btn-draw").classList.toggle("hidden", !(isMyTurn && !roomData.hasDrawn && deck.length > 0));
 
-  // 交差スケルトン以外の必須手があるときだけパス不可
   const requiredMove = readyToPlay ? findFirstValidMove(board, hand, false) : null;
   const anyMove = readyToPlay ? (requiredMove || findFirstValidMove(board, hand, true)) : null;
   $("btn-pass").disabled = !(readyToPlay && !requiredMove);
@@ -1274,7 +1268,7 @@ function renderGame() {
       $("g-hint").textContent = "✅ 出せるカード（合法手）がないため「パス」できます。";
     }
   } else {
-    $("g-hint").textContent = "「色変不可」は混色を含むため通常スケルトンは重ねられません（直線なら交差スケルトンのみ可）。";
+    $("g-hint").textContent = "通常スケルトンは手札の青/ピ/黄ラインと2枚組で空きマスに出します（場のカードには重ねられません）。";
   }
 
   selectedHandIds = selectedHandIds.filter((id) => hand.some((c) => c.id === id));
@@ -1395,17 +1389,33 @@ function nextTurnIndex() {
 }
 
 $("btn-pass").onclick = async () => {
-  if (findFirstValidMove(roomData.board || {}, roomData.players[myUid]?.hand || [], false)) {
+  const board = roomData.board || {};
+  const hand = roomData.players[myUid]?.hand || [];
+  if (findFirstValidMove(board, hand, false)) {
     showErr("g-msg", "配置できるカードがあるためパスできません。");
     return;
   }
+
+  const order = roomData.turnOrder || [];
+  const players = roomData.players || {};
+  const onlineCount = order.filter((uid) => players[uid]?.online).length;
+  const deckLen = (roomData.deck || []).length;
+  const nextStreak = (roomData.passStreak || 0) + 1;
+  const isGameOver = onlineCount <= 1 ? (deckLen === 0 && nextStreak >= 1) : (nextStreak >= onlineCount);
+
   const hist = [...(roomData.history || []), {
     type: "pass", uid: myUid, name: roomData.players[myUid].name, at: Date.now()
   }];
   selectedHandIds = []; rotSteps = 0; pendingPos = null; hintKey = null;
   $("g-hint-banner").classList.add("hidden");
+
   await update(ref(db, `rooms/${roomId}`), {
-    history: hist, turnIndex: nextTurnIndex(), hasDrawn: false
+    history: hist,
+    passStreak: nextStreak,
+    status: isGameOver ? "gameover" : "playing",
+    endedAt: isGameOver ? Date.now() : null,
+    turnIndex: isGameOver ? roomData.turnIndex : nextTurnIndex(),
+    hasDrawn: false
   });
 };
 
@@ -1464,24 +1474,39 @@ $("btn-pend-confirm").onclick = async () => {
     [`board/${key}`]: res.cell,
     [`players/${myUid}/hand`]: nextHand,
     lastKey: key, history: hist,
+    passStreak: 0,
     status: cleared ? "cleared" : "playing",
-    clearedAt: cleared ? Date.now() : null,
+    endedAt: cleared ? Date.now() : null,
     turnIndex: cleared ? roomData.turnIndex : nextTurnIndex(),
     hasDrawn: false
   });
 };
 
-function renderClear() {
+function renderResult() {
+  const isOver = roomData.status === "gameover";
+  const tagEl = $("res-tag");
+  tagEl.textContent = isOver ? "💀 GAME OVER 💀" : "🎉 CLEAR! 🎉";
+  tagEl.classList.toggle("is-over", isOver);
+  $("res-heading").textContent = isOver
+    ? "全員が1周パスし、手詰まりになりました…"
+    : "すべての線が一本につながりました！";
+
   $("clr-sheet").textContent = `使用お題：${roomData.themeName}`;
   renderBoardInto($("clr-board"), roomData.board || {}, false, roomData.lastKey);
   const ul = $("clr-members");
   ul.innerHTML = "";
   (roomData.turnOrder || []).forEach((uid) => {
     const p = roomData.players[uid];
-    if (p) { const li = document.createElement("li"); li.textContent = p.name; ul.appendChild(li); }
+    if (p) {
+      const li = document.createElement("li");
+      li.textContent = isOver ? `${p.name}（残${(p.hand || []).length}枚）` : p.name;
+      ul.appendChild(li);
+    }
   });
   const moves = (roomData.history || []).filter((h) => h.type === "place").length;
-  $("clr-stats").textContent = `配置手数：${moves}手 ／ 合計ターン：${(roomData.history || []).length}`;
+  const passes = (roomData.history || []).filter((h) => h.type === "pass").length;
+  const deckLeft = (roomData.deck || []).length;
+  $("clr-stats").textContent = `配置手数：${moves}手 ／ パス：${passes}回 ／ 残り山札：${deckLeft}枚`;
   $("btn-clr-reset").classList.toggle("hidden", roomData.hostUid !== myUid);
 }
 
@@ -1489,7 +1514,7 @@ function buildReplayBoardAt(step) {
   const theme = THEMES.find((t) => t.id === roomData.themeId) || THEMES[0];
   const board = {};
   Object.entries(theme.cells).forEach(([k, v]) => {
-    board[k] = { segs: v.segs, fixed: true, layers: [], hasHeavy: false };
+    board[k] = { segs: v.segs, fixed: true, layers: [], hasHeavy: false, hasCross: false };
   });
   let lastKey = null;
   const hist = roomData.history || [];
