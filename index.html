@@ -82,20 +82,24 @@
       background: #020617; border: 1px solid var(--border); border-radius: 12px;
       padding: 10px; overflow: auto; max-height: 48vh; display: flex; justify-content: center; align-items: flex-start;
     }
-    .board-grid { display: grid; gap: 2px; background: #1e293b; padding: 3px; border-radius: 8px; }
+    .board-grid { display: grid; gap: 3px; background: #1e293b; padding: 4px; border-radius: 8px; }
     .cell {
       width: var(--cell-size, 74px); height: var(--cell-size, 74px);
-      background: #090d16; border-radius: 4px; position: relative; cursor: pointer;
-      border: 1px solid #1e293b; overflow: hidden; user-select: none;
+      background: #141c2c; border-radius: 5px; position: relative; cursor: pointer;
+      border: 1px dashed #334155; overflow: hidden; user-select: none;
+    }
+    .cell.has-card {
+      background: #030712; border: 1px solid #64748b;
     }
     .cell:hover { border-color: #38bdf8; }
-    .cell.fixed { background: #141c2f; border-color: #60a5fa; cursor: default; }
+    .cell.fixed { background: #16213e; border: 2px solid #60a5fa; cursor: default; }
     .cell.last { box-shadow: inset 0 0 0 2px #f59e0b; }
     .cell.hint-cell { box-shadow: inset 0 0 0 3px #c084fc; background: #2e1065; }
     .cell.pending-ok { box-shadow: inset 0 0 0 3px #22c55e; background: #0b2219; }
     .cell.pending-ng { box-shadow: inset 0 0 0 3px #ef4444; background: #2a1015; }
     .cell.readonly { cursor: default; }
-    .cell.readonly:hover { border-color: #1e293b; }
+    .cell.readonly:hover { border-color: #334155; }
+    .cell.has-card.readonly:hover { border-color: #64748b; }
     .cell-tag {
       position: absolute; top: 2px; right: 2px; font-size: 9px; font-weight: 800;
       background: rgba(226, 232, 240, 0.9); color: #0f172a; padding: 0 3px; border-radius: 3px; pointer-events: none;
@@ -186,7 +190,7 @@
   <header class="header">
     <div class="brand">
       <span style="font-size:1.4rem;">➰</span>
-      <h1>ヒトスジナワ <small>Online v6</small></h1>
+      <h1>ヒトスジナワ <small>Online v7</small></h1>
     </div>
     <div class="row">
       <button id="btn-notify" class="btn btn-sm btn-outline">🔔 通知OFF</button>
@@ -371,7 +375,7 @@
         <li><strong>色のルール：</strong>青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>。</li>
         <li><strong>通常のスケルトン（[重]）：</strong>すでに出してあるカードには重ねられません。<strong>手札の青・ピンク・黄のみのラインカードと2枚1組</strong>で空きマスに配置します（混色カード「色変不可」とは組めません）。</li>
         <li><strong>交差スケルトン（[重]）：</strong>2枚組では出せず、<strong>すでに盤面に置かれているまっすぐなラインカード（混色・2枚組で作った直線もOK）</strong>の上にのみ1枚重ねられます。</li>
-        <li><strong>直線との交差予約：</strong>カーブの壁に線を突き当てる置き方はできませんが、<strong>直線（まだ交差していない直線）</strong>に対しては後から交差スケルトンを重ねられるため、青・ピンク・黄の線と直線の側面がぶつかる配置が可能です。</li>
+        <li><strong>直線との交差予約：</strong>カーブの壁に線を突き当てる置き方はできませんが、<strong>直線（まだ交差していない直線）</strong>に対しては後から交差スケルトンを重ねられるため、交差で通り抜けた先の反対側が壁等で塞がれていなければ配置可能です。</li>
         <li><strong>パス制限：</strong>ラインカードや2枚組が置けるときはパスできません。出せる手が何もない時、または<strong>交差スケルトンしか置けない時</strong>はパスできます。</li>
       </ul>
       <button id="btn-rules-close" class="btn btn-primary btn-block">閉じる</button>
@@ -564,6 +568,18 @@ function composeSelection(selected, rot) {
   };
 }
 
+/* 交差で突き抜けた先のマスが壁や色違いで塞がれていないか確認 */
+function checkCrossExit(board, fromR, fromC, dir, crossColor) {
+  const [dr, dc] = DELTA[dir];
+  const exitNb = board[`${fromR + dr}_${fromC + dc}`];
+  if (!exitNb) return true; // 空きマスなら通れる
+  const exitPorts = (exitNb.segs || []).map((s) => portColor(s, OPP[dir])).filter((v) => v !== null);
+  if (exitPorts.length > 0) {
+    return exitPorts[0] === crossColor;
+  }
+  return false; // 反対側にすでにカードがあり線がない（カーブ等の壁）→通れない
+}
+
 function validatePlace({ board, r, c, selected, rot }) {
   const comp = composeSelection(selected, rot);
   if (!comp.ok) return comp;
@@ -625,20 +641,23 @@ function validatePlace({ board, r, c, selected, rot }) {
 
   for (const dir of DIRS) {
     const [dr, dc] = DELTA[dir];
-    const nb = board[`${r + dr}_${c + dc}`];
+    const nr = r + dr, nc = c + dc;
+    const nb = board[`${nr}_${nc}`];
     const myPorts = newSegs.map((s) => portColor(s, dir)).filter((v) => v !== null);
     if (!nb) continue;
     const nbPorts = (nb.segs || []).map((s) => portColor(s, OPP[dir])).filter((v) => v !== null);
 
+    // 隣の線が自分の壁に突き当たる → 自分が直線で交差でき、さらに反対側も壁（カーブ等）で塞がれていない場合のみOK
     if (myPorts.length === 0 && nbPorts.length > 0) {
-      if (!(selfCanCrossLater && PRIMARY_COLORS.has(nbPorts[0]))) {
-        return { ok: false, err: "隣のカードの線を塞いでしまいます（↻回転で調整してください）。" };
+      if (!(selfCanCrossLater && PRIMARY_COLORS.has(nbPorts[0]) && checkCrossExit(board, r, c, OPP[dir], nbPorts[0]))) {
+        return { ok: false, err: "隣の線を交差で逃がしても反対側のカード（カーブ等）に当たってしまうため置けません。" };
       }
       continue;
     }
+    // 自分の線が隣の壁に突き当たる → 隣が直線で交差でき、さらにその先も壁（カーブ等）で塞がれていない場合のみOK
     if (myPorts.length > 0 && nbPorts.length === 0) {
-      if (!(isCrossableStraightCell(nb) && PRIMARY_COLORS.has(myPorts[0]))) {
-        return { ok: false, err: "隣のカード（カーブや交差済み等）の側面に線がぶつかってしまいます。" };
+      if (!(isCrossableStraightCell(nb) && PRIMARY_COLORS.has(myPorts[0]) && checkCrossExit(board, nr, nc, dir, myPorts[0]))) {
+        return { ok: false, err: "隣のカード（カーブや行き止まり）に線がぶつかってしまいます。" };
       }
       continue;
     }
@@ -1113,6 +1132,7 @@ function renderBoardInto(containerEl, board, interactive = false, lastKey = null
       const cell = isPend ? pendOverlay.cell : board[key];
       const div = document.createElement("div");
       let cls = "cell";
+      if (cell) cls += " has-card";
       if (board[key]?.fixed) cls += " fixed";
       if (isPend) cls += pendOverlay.ok ? " pending-ok" : " pending-ng";
       else if (key === hlKey) cls += " hint-cell";
@@ -1408,7 +1428,6 @@ $("btn-pass").onclick = async () => {
   const onlineCount = Math.max(1, order.filter((uid) => players[uid]?.online).length);
   const deckLen = (roomData.deck || []).length;
 
-  // 山札が0枚のときだけ連続パスをカウントし、全員1周パスでゲームオーバー
   const nextStreak = deckLen === 0 ? (roomData.passStreak || 0) + 1 : 0;
   const isGameOver = deckLen === 0 && nextStreak >= onlineCount;
 
