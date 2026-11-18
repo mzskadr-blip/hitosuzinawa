@@ -101,10 +101,10 @@
       justify-content: space-between;
       align-items: center;
     }
-    .stamp-grid { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    .stamp-grid { display: grid; grid-template-columns: 1fr; gap: 5px; }
     .stamp-btn {
       width: 100%; text-align: left; background: var(--panel2); border: 1px solid #334155;
-      color: #f8fafc; border-radius: 9px; padding: 8px 10px; font-size: 0.85rem; font-weight: 700;
+      color: #f8fafc; border-radius: 9px; padding: 7px 10px; font-size: 0.84rem; font-weight: 700;
       cursor: pointer; transition: transform 0.08s, border-color 0.12s, background 0.12s;
     }
     .stamp-btn:hover:not(:disabled) { border-color: #38bdf8; background: #172554; }
@@ -112,7 +112,7 @@
     .stamp-btn:disabled { opacity: 0.5; cursor: wait; }
     .reaction-feed {
       margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px;
-      display: flex; flex-direction: column; gap: 5px; max-height: 220px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 5px; max-height: 200px; overflow-y: auto;
     }
     .reaction-item {
       background: var(--panel2); border: 1px solid #1e293b; border-radius: 8px;
@@ -260,7 +260,7 @@
   <header class="header">
     <div class="brand">
       <span style="font-size:1.4rem;">➰</span>
-      <h1>ヒトスジナワ <small>Online v9</small></h1>
+      <h1>ヒトスジナワ <small>Online v10</small></h1>
     </div>
     <div class="row">
       <button id="btn-notify" class="btn btn-sm btn-outline">🔔 通知OFF</button>
@@ -491,7 +491,9 @@ const STAMPS = [
   "😨やばい😱",
   "😠よくないよぉ⤴︎",
   "😩やっちまったなあ",
-  "😏そんな生き方でいいの？"
+  "😏そんな生き方でいいの？",
+  "👺判断が早い！",
+  "😎速さがが足りないッ！"
 ];
 
 const COLOR_INFO = {
@@ -588,7 +590,6 @@ function canOverlayColorSkel(card) {
   return !!card && card.type === "line" && PRIMARY_COLORS.has(card.ca) && PRIMARY_COLORS.has(card.cb);
 }
 
-/* 直線2枚組かつスケルトンが半分だけ色付き（片側透明）ならスケルトン単独180°回転可 */
 function canFlipStraightSkel(selected) {
   if (!selected || selected.length !== 2) return false;
   const lineC = selected.find((x) => x.type === "line");
