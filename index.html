@@ -1,252 +1,140 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ヒトスジナワ オンライン</title>
-  <style>
-    :root {
-      --bg: #0f172a;
-      --panel: #1e293b;
-      --panel2: #0b1120;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: #334155;
-      --primary: #3b82f6;
-      --secondary: #14b8a6;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --ok: #22c55e;
-    }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.45;
-    }
-    #app { max-width: 1160px; margin: 0 auto; padding: 10px 12px 24px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
-    .brand { display: flex; align-items: center; gap: 8px; }
-    .brand h1 { margin: 0; font-size: 1.15rem; }
-    .brand small { color: #38bdf8; font-size: 0.75rem; }
-    .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    .hidden { display: none !important; }
-    .card-box { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
-    .btn {
-      border: none; border-radius: 8px; padding: 9px 13px; font-size: 0.9rem; font-weight: 700;
-      cursor: pointer; color: #fff; background: #475569; transition: opacity .15s, transform .06s;
-    }
-    .btn:active:not(:disabled) { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-sm { padding: 5px 9px; font-size: 0.78rem; }
-    .btn-block { width: 100%; display: block; }
-    .btn-primary { background: var(--primary); }
-    .btn-secondary { background: var(--secondary); color: #042f2e; }
-    .btn-ok { background: var(--ok); color: #052e16; }
-    .btn-warning { background: var(--warning); color: #1e1b4b; }
-    .btn-danger { background: var(--danger); }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
-    .form-group input {
-      width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
-      background: var(--panel2); color: var(--text); font-size: 1rem;
-    }
-    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-    .sub-panel { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
-    .sub-panel h3 { margin: 0 0 6px; font-size: 1rem; }
-    .muted { color: var(--muted); font-size: 0.82rem; }
-    .banner-err { background: #7f1d1d; color: #fecaca; padding: 9px 12px; border-radius: 8px; margin-top: 8px; font-weight: 700; font-size: 0.86rem; }
-    .banner-hint { background: #2e1065; color: #e9d5ff; border: 1px solid #a855f7; padding: 8px 12px; border-radius: 8px; margin-top: 8px; font-weight: 700; font-size: 0.84rem; }
-    .code-box {
-      text-align: center; background: var(--panel2); border: 2px dashed #38bdf8;
-      border-radius: 12px; padding: 14px; margin-bottom: 14px;
-    }
-    .code-box strong { font-size: 2.2rem; letter-spacing: 0.22em; color: #38bdf8; display: block; margin: 4px 0; }
-    .player-list { list-style: none; padding: 0; margin: 0 0 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
-    .player-list li { background: var(--panel2); border: 1px solid var(--border); padding: 8px 10px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; display: flex; justify-content: space-between; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-    .badge { background: var(--panel); border: 1px solid var(--border); padding: 3px 9px; border-radius: 999px; font-size: 0.78rem; }
-    .players-strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 6px; }
-    .pill { flex: 0 0 auto; background: var(--panel); border: 2px solid var(--border); border-radius: 9px; padding: 4px 9px; font-size: 0.8rem; white-space: nowrap; }
-    .pill.active { border-color: #38bdf8; background: #172554; font-weight: 700; }
-    .pill.off { opacity: 0.45; border-style: dashed; }
-    .turn-bar { text-align: center; padding: 7px 10px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; background: var(--panel); border: 1px solid var(--border); }
-    .turn-bar.mine { background: #1e3a8a; border-color: #60a5fa; color: #eff6ff; }
-
-    .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 12px; align-items: start; }
-    .game-main { min-width: 0; }
-    .reaction-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; position: sticky; top: 10px; }
-    .reaction-panel h3 { margin: 0 0 8px; font-size: 0.9rem; color: #e2e8f0; }
-    .stamp-grid { display: grid; grid-template-columns: 1fr; gap: 5px; }
-    .stamp-btn {
-      width: 100%; text-align: left; background: var(--panel2); border: 1px solid #334155;
-      color: #f8fafc; border-radius: 9px; padding: 7px 10px; font-size: 0.84rem; font-weight: 700;
-      cursor: pointer; transition: transform 0.08s, border-color 0.12s, background 0.12s;
-    }
-    .stamp-btn:hover:not(:disabled) { border-color: #38bdf8; background: #172554; }
-    .stamp-btn:active:not(:disabled) { transform: scale(0.96); }
-    .stamp-btn:disabled { opacity: 0.5; cursor: wait; }
-    .reaction-feed { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; display: flex; flex-direction: column; gap: 5px; max-height: 200px; overflow-y: auto; }
-    .reaction-item { background: var(--panel2); border: 1px solid #1e293b; border-radius: 8px; padding: 5px 8px; font-size: 0.78rem; animation: popIn 0.18s ease-out; }
-    .reaction-item strong { color: #38bdf8; margin-right: 4px; }
-    @keyframes popIn { from { opacity: 0; transform: translateY(-4px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    .stamp-toast-wrap { position: fixed; top: 16px; right: 16px; z-index: 200; display: flex; flex-direction: column; gap: 8px; pointer-events: none; max-width: 300px; }
-    .stamp-toast { background: rgba(15, 23, 42, 0.94); border: 2px solid #38bdf8; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); color: #f8fafc; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; font-weight: 800; animation: toastPop 0.2s ease-out; }
-    .stamp-toast small { display: block; font-size: 0.72rem; color: #93c5fd; }
-    @keyframes toastPop { from { opacity: 0; transform: translateX(18px) scale(0.92); } to { opacity: 1; transform: translateX(0) scale(1); } }
-
-    .board-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.78rem; color: var(--muted); }
-    .board-scroll { background: #020617; border: 1px solid var(--border); border-radius: 12px; padding: 10px; overflow: auto; max-height: 52vh; display: flex; justify-content: center; align-items: flex-start; }
-    .board-grid { display: grid; gap: 3px; background: #1e293b; padding: 4px; border-radius: 8px; }
-    .cell {
-      width: var(--cell-size, 56px); height: var(--cell-size, 56px);
-      background: #141c2c; border-radius: 5px; position: relative; cursor: pointer;
-      border: 1px dashed #334155; overflow: hidden; user-select: none;
-    }
-    .cell.has-card { background: #030712; border: 1px solid #64748b; }
-    .cell:hover { border-color: #38bdf8; }
-    .cell.fixed { background: #050a14; border: 2px solid #60a5fa; cursor: default; }
-    .cell.last { box-shadow: inset 0 0 0 2px #f59e0b; }
-    .cell.hint-cell { box-shadow: inset 0 0 0 3px #c084fc; background: #2e1065; }
-    .cell.pending-ok { box-shadow: inset 0 0 0 3px #22c55e; background: #0b2219; }
-    .cell.pending-ng { box-shadow: inset 0 0 0 3px #ef4444; background: #2a1015; }
-    .cell.pending-try { box-shadow: inset 0 0 0 3px #a855f7; background: #1e1038; }
-    .cell.readonly { cursor: default; }
-    .cell.readonly:hover { border-color: #334155; }
-    .cell.has-card.readonly:hover { border-color: #64748b; }
-    .cell-tag { position: absolute; top: 2px; right: 2px; font-size: 9px; font-weight: 800; background: rgba(226, 232, 240, 0.9); color: #0f172a; padding: 0 3px; border-radius: 3px; pointer-events: none; }
-    .cell-theme-lbl { position: absolute; bottom: 2px; left: 3px; font-size: 9px; font-weight: 800; color: #93c5fd; pointer-events: none; background: rgba(2,6,23,0.7); padding: 0 2px; border-radius: 2px; }
-    .pending-bar { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: #172554; border: 2px solid #38bdf8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .pending-bar.is-ng { background: #450a0a; border-color: #f87171; }
-    .pending-bar.is-try { background: #2e1065; border-color: #c084fc; }
-    .preview-box { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .preview-cards { display: flex; align-items: center; gap: 8px; }
-    .preview-mini { width: 54px; height: 54px; border-radius: 8px; overflow: hidden; background: #070b12; border: 1px solid #475569; flex-shrink: 0; }
-    .preview-mini.is-skel {
-      background-color: #475569;
-      background-image: linear-gradient(45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
-        linear-gradient(-45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.12) 75%),
-        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.12) 75%);
-      background-size: 10px 10px; border: 1px dashed #cbd5e1;
-    }
-    .preview-result { width: 64px; height: 64px; border-radius: 9px; overflow: hidden; background: #070b12; border: 2px solid #38bdf8; flex-shrink: 0; }
-    .preview-info { flex: 1; min-width: 160px; font-size: 0.82rem; }
-    .hand-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-top: 8px; }
-    .hand-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 0.84rem; font-weight: 700; }
-
-    /* 手札3段表示 */
-    .hand-tiers { display: flex; flex-direction: column; gap: 8px; }
-    .hand-tier { background: rgba(11, 17, 32, 0.55); border: 1px solid #283548; border-radius: 9px; padding: 6px 8px; }
-    .tier-head { font-size: 0.74rem; font-weight: 800; color: #94a3b8; margin-bottom: 4px; display: flex; justify-content: space-between; }
-    .hand-list { display: flex; gap: 7px; overflow-x: auto; padding: 2px 2px 4px; align-items: center; min-height: 28px; }
-    .hcard {
-      flex: 0 0 78px; background: #070b12; border: 2px solid #334155; border-radius: 9px;
-      padding: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; position: relative;
-      transition: transform 0.1s, border-color 0.1s;
-    }
-    .hcard.is-skel {
-      background-color: #475569;
-      background-image: linear-gradient(45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
-        linear-gradient(-45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.12) 75%),
-        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.12) 75%);
-      background-size: 10px 10px; background-position: 0 0, 0 5px, 5px -5px, -5px 0; border: 2px dashed #cbd5e1;
-    }
-    .hcard.is-new { border-color: #22c55e; box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.45); }
-    .hcard.sel { border-color: #38bdf8; border-style: solid; box-shadow: 0 0 0 2px rgba(56,189,248,0.55); transform: translateY(-3px); }
-    .hcard .svg-wrap { width: 50px; height: 50px; border-radius: 5px; overflow: hidden; }
-    .hcard.is-skel .svg-wrap { background: rgba(255, 255, 255, 0.14); border: 1px dashed rgba(255,255,255,0.35); }
-    .hcard .lbl { font-size: 9px; font-weight: 800; text-align: center; color: #f8fafc; line-height: 1.15; white-space: nowrap; }
-    .hcard .heavy-mark { position: absolute; top: 2px; right: 2px; font-size: 8px; font-weight: 900; background: #f8fafc; color: #0f172a; padding: 0 3px; border-radius: 3px; border: 1px solid #64748b; }
-    .hcard .no-skel-mark { position: absolute; top: 2px; left: 2px; font-size: 7px; font-weight: 800; background: rgba(239, 68, 68, 0.25); color: #fca5a5; padding: 0 2px; border-radius: 3px; border: 1px solid #7f1d1d; }
-    .hcard .new-mark { position: absolute; bottom: 20px; right: 2px; font-size: 8px; font-weight: 900; background: #22c55e; color: #052e16; padding: 0 4px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.6); }
-
-    .clear-title { text-align: center; margin-bottom: 10px; }
-    .clear-title .tag { display: inline-block; background: #f59e0b; color: #0f172a; font-weight: 900; padding: 4px 14px; border-radius: 999px; margin-bottom: 6px; }
-    .clear-title .tag.is-over { background: #ef4444; color: #ffffff; }
-    .chip-list { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 6px 0; }
-    .chip-list li { background: var(--panel2); border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px; font-size: 0.82rem; font-weight: 700; }
-    .replay-log { max-height: 170px; overflow-y: auto; background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px 8px 26px; margin: 8px 0 0; font-size: 0.82rem; }
-    .replay-log li { padding: 3px 5px; border-radius: 4px; cursor: pointer; }
-    .replay-log li.cur { background: #1e3a8a; font-weight: 700; }
-    .modal { position: fixed; inset: 0; background: rgba(2,6,23,0.75); display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 99; }
-    .modal-body { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
-
-    @media (max-width: 820px) {
-      .game-layout { grid-template-columns: 1fr; }
-      .reaction-panel { position: static; }
-      .stamp-grid { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 640px) { .split { grid-template-columns: 1fr; } }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ヒトスジナワ オンライン</title>
+<style>
+:root{--bg:#0f172a;--panel:#1e293b;--panel2:#0b1120;--text:#f8fafc;--muted:#94a3b8;--border:#334155;--primary:#3b82f6;--secondary:#14b8a6;--warning:#f59e0b;--danger:#ef4444;--ok:#22c55e}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
+#app{max-width:1160px;margin:0 auto;padding:10px 12px 24px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand h1{margin:0;font-size:1.15rem}
+.brand small{color:#38bdf8;font-size:0.75rem}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.screen{display:none}.screen.active{display:block}.hidden{display:none!important}
+.card-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+.btn{border:none;border-radius:8px;padding:9px 13px;font-size:0.9rem;font-weight:700;cursor:pointer;color:#fff;background:#475569;transition:opacity .15s,transform .06s}
+.btn:active:not(:disabled){transform:scale(0.97)}.btn:disabled{opacity:0.4;cursor:not-allowed}
+.btn-sm{padding:5px 9px;font-size:0.78rem}.btn-block{width:100%;display:block}
+.btn-primary{background:var(--primary)}.btn-secondary{background:var(--secondary);color:#042f2e}.btn-ok{background:var(--ok);color:#052e16}.btn-warning{background:var(--warning);color:#1e1b4b}.btn-danger{background:var(--danger)}.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.form-group{margin-bottom:12px}.form-group label{display:block;font-size:0.82rem;color:var(--muted);margin-bottom:4px;font-weight:700}
+.form-group input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:1rem}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.sub-panel{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px}.sub-panel h3{margin:0 0 6px;font-size:1rem}
+.muted{color:var(--muted);font-size:0.82rem}
+.banner-err{background:#7f1d1d;color:#fecaca;padding:9px 12px;border-radius:8px;margin-top:8px;font-weight:700;font-size:0.86rem}
+.banner-hint{background:#2e1065;color:#e9d5ff;border:1px solid #a855f7;padding:8px 12px;border-radius:8px;margin-top:8px;font-weight:700;font-size:0.84rem}
+.code-box{text-align:center;background:var(--panel2);border:2px dashed #38bdf8;border-radius:12px;padding:14px;margin-bottom:14px}
+.code-box strong{font-size:2.2rem;letter-spacing:0.22em;color:#38bdf8;display:block;margin:4px 0}
+.player-list{list-style:none;padding:0;margin:0 0 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.player-list li{background:var(--panel2);border:1px solid var(--border);padding:8px 10px;border-radius:8px;font-weight:700;font-size:0.88rem;display:flex;justify-content:space-between}
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.badge{background:var(--panel);border:1px solid var(--border);padding:3px 9px;border-radius:999px;font-size:0.78rem}
+.players-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px}
+.pill{flex:0 0 auto;background:var(--panel);border:2px solid var(--border);border-radius:9px;padding:4px 9px;font-size:0.8rem;white-space:nowrap}
+.pill.active{border-color:#38bdf8;background:#172554;font-weight:700}.pill.off{opacity:0.45;border-style:dashed}
+.turn-bar{text-align:center;padding:7px 10px;border-radius:8px;font-weight:700;font-size:0.9rem;margin-bottom:8px;background:var(--panel);border:1px solid var(--border)}
+.turn-bar.mine{background:#1e3a8a;border-color:#60a5fa;color:#eff6ff}
+.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:12px;align-items:start}
+.game-main{min-width:0}
+.reaction-panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px;position:sticky;top:10px}
+.reaction-panel h3{margin:0 0 8px;font-size:0.9rem;color:#e2e8f0}
+.stamp-grid{display:grid;grid-template-columns:1fr;gap:5px}
+.stamp-btn{width:100%;text-align:left;background:var(--panel2);border:1px solid #334155;color:#f8fafc;border-radius:9px;padding:7px 10px;font-size:0.84rem;font-weight:700;cursor:pointer;transition:transform .08s,border-color .12s,background .12s}
+.stamp-btn:hover:not(:disabled){border-color:#38bdf8;background:#172554}.stamp-btn:active:not(:disabled){transform:scale(0.96)}.stamp-btn:disabled{opacity:0.5;cursor:wait}
+.reaction-feed{margin-top:10px;border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px;max-height:190px;overflow-y:auto}
+.reaction-item{background:var(--panel2);border:1px solid #1e293b;border-radius:8px;padding:5px 8px;font-size:0.78rem;animation:popIn .18s ease-out}
+.reaction-item strong{color:#38bdf8;margin-right:4px}
+@keyframes popIn{from{opacity:0;transform:translateY(-4px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.stamp-toast-wrap{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:300px}
+.stamp-toast{background:rgba(15,23,42,0.94);border:2px solid #38bdf8;box-shadow:0 8px 24px rgba(0,0,0,0.5);color:#f8fafc;padding:10px 14px;border-radius:12px;font-size:0.95rem;font-weight:800;animation:toastPop .2s ease-out}
+.stamp-toast small{display:block;font-size:0.72rem;color:#93c5fd}
+@keyframes toastPop{from{opacity:0;transform:translateX(18px) scale(0.92)}to{opacity:1;transform:translateX(0) scale(1)}}
+.board-tools{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:0.78rem;color:var(--muted)}
+.board-scroll{background:#020617;border:1px solid var(--border);border-radius:12px;padding:10px;overflow:auto;max-height:52vh;display:flex;justify-content:center;align-items:flex-start}
+.board-grid{display:grid;gap:3px;background:#1e293b;padding:4px;border-radius:8px}
+.cell{width:var(--cell-size,56px);height:var(--cell-size,56px);background:#141c2c;border-radius:5px;position:relative;cursor:pointer;border:1px dashed #334155;overflow:hidden;user-select:none}
+.cell.has-card{background:#030712;border:1px solid #64748b}.cell:hover{border-color:#38bdf8}
+.cell.fixed{background:#050a14;border:2px solid #60a5fa;cursor:default}
+.cell.last{box-shadow:inset 0 0 0 2px #f59e0b}.cell.hint-cell{box-shadow:inset 0 0 0 3px #c084fc;background:#2e1065}
+.cell.pending-ok{box-shadow:inset 0 0 0 3px #22c55e;background:#0b2219}.cell.pending-ng{box-shadow:inset 0 0 0 3px #ef4444;background:#2a1015}.cell.pending-try{box-shadow:inset 0 0 0 3px #a855f7;background:#1e1038}
+.cell.readonly{cursor:default}.cell.readonly:hover{border-color:#334155}.cell.has-card.readonly:hover{border-color:#64748b}
+.cell-tag{position:absolute;top:2px;right:2px;font-size:9px;font-weight:800;background:rgba(226,232,240,0.9);color:#0f172a;padding:0 3px;border-radius:3px;pointer-events:none}
+.cell-theme-lbl{position:absolute;bottom:2px;left:3px;font-size:9px;font-weight:800;color:#93c5fd;pointer-events:none;background:rgba(2,6,23,0.7);padding:0 2px;border-radius:2px}
+.pending-bar{margin-top:8px;padding:10px 12px;border-radius:10px;background:#172554;border:2px solid #38bdf8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.pending-bar.is-ng{background:#450a0a;border-color:#f87171}.pending-bar.is-try{background:#2e1065;border-color:#c084fc}
+.preview-box{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.preview-cards{display:flex;align-items:center;gap:8px}
+.preview-mini{width:54px;height:54px;border-radius:8px;overflow:hidden;background:#070b12;border:1px solid #475569;flex-shrink:0}
+.preview-mini.is-skel{background-color:#475569;background-image:linear-gradient(45deg,rgba(255,255,255,0.12) 25%,transparent 25%),linear-gradient(-45deg,rgba(255,255,255,0.12) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(255,255,255,0.12) 75%),linear-gradient(-45deg,transparent 75%,rgba(255,255,255,0.12) 75%);background-size:10px 10px;border:1px dashed #cbd5e1}
+.preview-result{width:64px;height:64px;border-radius:9px;overflow:hidden;background:#070b12;border:2px solid #38bdf8;flex-shrink:0}
+.preview-info{flex:1;min-width:160px;font-size:0.82rem}
+.hand-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:8px}
+.hand-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px;font-size:0.84rem;font-weight:700}
+.hand-tiers{display:flex;flex-direction:column;gap:8px}
+.hand-tier{background:rgba(11,17,32,0.55);border:1px solid #283548;border-radius:9px;padding:6px 8px}
+.tier-head{font-size:0.74rem;font-weight:800;color:#94a3b8;margin-bottom:4px;display:flex;justify-content:space-between}
+.hand-list{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 4px;align-items:center;min-height:28px}
+.hcard{flex:0 0 78px;background:#070b12;border:2px solid #334155;border-radius:9px;padding:4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;position:relative;transition:transform .1s,border-color .1s}
+.hcard.is-skel{background-color:#475569;background-image:linear-gradient(45deg,rgba(255,255,255,0.12) 25%,transparent 25%),linear-gradient(-45deg,rgba(255,255,255,0.12) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(255,255,255,0.12) 75%),linear-gradient(-45deg,transparent 75%,rgba(255,255,255,0.12) 75%);background-size:10px 10px;background-position:0 0,0 5px,5px -5px,-5px 0;border:2px dashed #cbd5e1}
+.hcard.is-new{border-color:#22c55e;box-shadow:0 0 0 1px rgba(34,197,94,0.45)}
+.hcard.sel{border-color:#38bdf8;border-style:solid;box-shadow:0 0 0 2px rgba(56,189,248,0.55);transform:translateY(-3px)}
+.hcard .svg-wrap{width:50px;height:50px;border-radius:5px;overflow:hidden}
+.hcard.is-skel .svg-wrap{background:rgba(255,255,255,0.14);border:1px dashed rgba(255,255,255,0.35)}
+.hcard .lbl{font-size:9px;font-weight:800;text-align:center;color:#f8fafc;line-height:1.15;white-space:nowrap}
+.hcard .heavy-mark{position:absolute;top:2px;right:2px;font-size:8px;font-weight:900;background:#f8fafc;color:#0f172a;padding:0 3px;border-radius:3px;border:1px solid #64748b}
+.hcard .no-skel-mark{position:absolute;top:2px;left:2px;font-size:7px;font-weight:800;background:rgba(239,68,68,0.25);color:#fca5a5;padding:0 2px;border-radius:3px;border:1px solid #7f1d1d}
+.hcard .new-mark{position:absolute;bottom:20px;right:2px;font-size:8px;font-weight:900;background:#22c55e;color:#052e16;padding:0 4px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.6)}
+.clear-title{text-align:center;margin-bottom:10px}
+.clear-title .tag{display:inline-block;background:#f59e0b;color:#0f172a;font-weight:900;padding:4px 14px;border-radius:999px;margin-bottom:6px}
+.clear-title .tag.is-over{background:#ef4444;color:#ffffff}
+.chip-list{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:6px 0}
+.chip-list li{background:var(--panel2);border:1px solid var(--border);padding:3px 10px;border-radius:999px;font-size:0.82rem;font-weight:700}
+.replay-log{max-height:170px;overflow-y:auto;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 10px 8px 26px;margin:8px 0 0;font-size:0.82rem}
+.replay-log li{padding:3px 5px;border-radius:4px;cursor:pointer}.replay-log li.cur{background:#1e3a8a;font-weight:700}
+.modal{position:fixed;inset:0;background:rgba(2,6,23,0.75);display:flex;align-items:center;justify-content:center;padding:14px;z-index:99}
+.modal-body{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto}
+@media(max-width:820px){.game-layout{grid-template-columns:1fr}.reaction-panel{position:static}.stamp-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.split{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div id="stamp-toast-wrap" class="stamp-toast-wrap"></div>
-
 <div id="app">
   <header class="header">
-    <div class="brand">
-      <span style="font-size:1.4rem;">➰</span>
-      <h1>ヒトスジナワ <small>Online v12</small></h1>
-    </div>
+    <div class="brand"><span style="font-size:1.4rem;">➰</span><h1>ヒトスジナワ <small>Online v13</small></h1></div>
     <div class="row">
       <button id="btn-notify" class="btn btn-sm btn-outline">🔔 通知OFF</button>
       <button id="btn-rules" class="btn btn-sm btn-outline">❓ ルール</button>
     </div>
   </header>
 
-  <!-- 1. ホーム -->
   <section id="scr-home" class="screen active">
     <div class="card-box">
       <h2 style="margin-top:0;">オンラインルーム</h2>
-      <div class="form-group">
-        <label for="inp-name">あなたの名前</label>
-        <input id="inp-name" type="text" maxlength="12" placeholder="例：たろう" />
-      </div>
+      <div class="form-group"><label for="inp-name">あなたの名前</label><input id="inp-name" type="text" maxlength="12" placeholder="例：たろう" /></div>
       <div class="split">
-        <div class="sub-panel">
-          <h3>部屋をつくる（ホスト）</h3>
-          <p class="muted">数字4ケタの招待IDを発行します（1〜8人）。</p>
-          <button id="btn-create" class="btn btn-primary btn-block">部屋を作成する</button>
-        </div>
-        <div class="sub-panel">
-          <h3>部屋に入る</h3>
-          <div class="form-group">
-            <label for="inp-room">招待ID（数字4ケタ）</label>
-            <input id="inp-room" type="tel" inputmode="numeric" maxlength="4" placeholder="1234" />
-          </div>
-          <button id="btn-join" class="btn btn-secondary btn-block">参加する</button>
-        </div>
+        <div class="sub-panel"><h3>部屋をつくる（ホスト）</h3><p class="muted">数字4ケタの招待IDを発行します（1〜8人）。</p><button id="btn-create" class="btn btn-primary btn-block">部屋を作成する</button></div>
+        <div class="sub-panel"><h3>部屋に入る</h3><div class="form-group"><label for="inp-room">招待ID（数字4ケタ）</label><input id="inp-room" type="tel" inputmode="numeric" maxlength="4" placeholder="1234" /></div><button id="btn-join" class="btn btn-secondary btn-block">参加する</button></div>
       </div>
       <div id="home-err" class="banner-err hidden"></div>
     </div>
   </section>
 
-  <!-- 2. ロビー -->
   <section id="scr-lobby" class="screen">
     <div class="card-box">
-      <div class="code-box">
-        <span class="muted">招待ID（数字4ケタ）</span>
-        <strong id="lob-id">----</strong>
-        <button id="btn-copy" class="btn btn-sm btn-outline">IDをコピー</button>
-      </div>
+      <div class="code-box"><span class="muted">招待ID（数字4ケタ）</span><strong id="lob-id">----</strong><button id="btn-copy" class="btn btn-sm btn-outline">IDをコピー</button></div>
       <h3 style="margin:0 0 8px;">参加メンバー（<span id="lob-cnt">0</span> / 8人）</h3>
       <ul id="lob-list" class="player-list"></ul>
-      <div id="lob-host-box" class="hidden">
-        <button id="btn-start" class="btn btn-primary btn-block">ゲームを開始する</button>
-      </div>
+      <div id="lob-host-box" class="hidden"><button id="btn-start" class="btn btn-primary btn-block">ゲームを開始する</button></div>
       <p id="lob-wait" class="muted" style="text-align:center;font-weight:700;">ホストが開始するのを待っています...</p>
       <button id="btn-leave" class="btn btn-outline btn-block" style="margin-top:10px;">ルームを退出</button>
     </div>
   </section>
 
-  <!-- 3. ゲーム -->
   <section id="scr-game" class="screen">
     <div class="topbar">
       <div class="row">
@@ -267,14 +155,9 @@
       <div class="game-main">
         <div class="board-tools">
           <span>青枠＝お題シート（2マス分）／ タップで仮置き・お試し可</span>
-          <div class="row">
-            <button id="btn-zoom-out" class="btn btn-sm btn-outline">－</button>
-            <button id="btn-zoom-in" class="btn btn-sm btn-outline">＋</button>
-          </div>
+          <div class="row"><button id="btn-zoom-out" class="btn btn-sm btn-outline">－</button><button id="btn-zoom-in" class="btn btn-sm btn-outline">＋</button></div>
         </div>
-        <div class="board-scroll" id="g-board-scroll">
-          <div id="g-board" class="board-grid"></div>
-        </div>
+        <div class="board-scroll" id="g-board-scroll"><div id="g-board" class="board-grid"></div></div>
 
         <div id="pending-bar" class="pending-bar hidden">
           <div id="pending-status" style="font-size:0.86rem;font-weight:700;">仮置き中</div>
@@ -291,7 +174,6 @@
 
         <div class="hand-box">
           <div id="preview-box" class="preview-box hidden"></div>
-
           <div class="hand-top">
             <span>手札（他人の手番でも選択・組み合わせお試し可）</span>
             <div class="row">
@@ -302,23 +184,11 @@
               <button id="btn-pass" class="btn btn-sm btn-warning" disabled>パス</button>
             </div>
           </div>
-
-          <!-- 3段手札エリア（折り返しなし） -->
           <div class="hand-tiers">
-            <div class="hand-tier">
-              <div class="tier-head"><span>1段目：ラインカード</span><span id="cnt-line">0枚</span></div>
-              <div id="g-hand-line" class="hand-list"></div>
-            </div>
-            <div class="hand-tier">
-              <div class="tier-head"><span>2段目：スケルトンカード（青/ピ/黄ラインと2枚組）</span><span id="cnt-skel">0枚</span></div>
-              <div id="g-hand-skel" class="hand-list"></div>
-            </div>
-            <div class="hand-tier">
-              <div class="tier-head"><span>3段目：交差スケルトン（場の直線に重ねる）</span><span id="cnt-cross">0枚</span></div>
-              <div id="g-hand-cross" class="hand-list"></div>
-            </div>
+            <div class="hand-tier"><div class="tier-head"><span>1段目：ラインカード</span><span id="cnt-line">0枚</span></div><div id="g-hand-line" class="hand-list"></div></div>
+            <div class="hand-tier"><div class="tier-head"><span>2段目：スケルトンカード（青/ピ/黄ラインと2枚組）</span><span id="cnt-skel">0枚</span></div><div id="g-hand-skel" class="hand-list"></div></div>
+            <div class="hand-tier"><div class="tier-head"><span>3段目：交差スケルトン（場の直線に重ねる）</span><span id="cnt-cross">0枚</span></div><div id="g-hand-cross" class="hand-list"></div></div>
           </div>
-
           <div id="g-hint" class="muted" style="margin-top:6px;"></div>
         </div>
       </div>
@@ -326,1675 +196,591 @@
       <aside class="reaction-panel" aria-label="リアクションスタンプ">
         <h3>💬 スタンプ</h3>
         <div id="stamp-grid" class="stamp-grid"></div>
-        <div id="reaction-feed" class="reaction-feed">
-          <span class="muted" style="font-size:0.75rem;">まだリアクションはありません</span>
-        </div>
+        <div id="reaction-feed" class="reaction-feed"><span class="muted" style="font-size:0.75rem;">まだリアクションはありません</span></div>
       </aside>
     </div>
   </section>
 
-  <!-- 4. 結果画面（クリア / ゲームオーバー共用） -->
   <section id="scr-clear" class="screen">
     <div class="card-box">
-      <div class="clear-title">
-        <div id="res-tag" class="tag">🎉 CLEAR! 🎉</div>
-        <h2 id="res-heading" style="margin:4px 0;">すべての線が一本につながりました！</h2>
-        <p id="clr-sheet" class="muted"></p>
-      </div>
-      <div class="board-scroll" style="max-height:46vh;">
-        <div id="clr-board" class="board-grid"></div>
-      </div>
-      <div style="margin:12px 0;">
-        <div class="muted" style="font-weight:700;">プレイしたメンバー</div>
-        <ul id="clr-members" class="chip-list"></ul>
-        <div id="clr-stats" class="muted" style="margin-top:6px;"></div>
-      </div>
-      <div class="row" style="justify-content:center;">
-        <button id="btn-open-rep" class="btn btn-secondary">▶ リプレイを見る（振り返り）</button>
-        <button id="btn-clr-reset" class="btn btn-primary hidden">新しいゲームを始める</button>
-      </div>
+      <div class="clear-title"><div id="res-tag" class="tag">🎉 CLEAR! 🎉</div><h2 id="res-heading" style="margin:4px 0;">すべての線が一本につながりました！</h2><p id="clr-sheet" class="muted"></p></div>
+      <div class="board-scroll" style="max-height:46vh;"><div id="clr-board" class="board-grid"></div></div>
+      <div style="margin:12px 0;"><div class="muted" style="font-weight:700;">プレイしたメンバー</div><ul id="clr-members" class="chip-list"></ul><div id="clr-stats" class="muted" style="margin-top:6px;"></div></div>
+      <div class="row" style="justify-content:center;"><button id="btn-open-rep" class="btn btn-secondary">▶ リプレイを見る（振り返り）</button><button id="btn-clr-reset" class="btn btn-primary hidden">新しいゲームを始める</button></div>
     </div>
   </section>
 
-  <!-- 5. リプレイ画面 -->
   <section id="scr-replay" class="screen">
     <div class="card-box">
-      <div class="topbar">
-        <h2 style="margin:0;font-size:1.1rem;">リプレイ再生（振り返り）</h2>
-        <button id="btn-close-rep" class="btn btn-sm btn-outline">結果画面へ戻る</button>
-      </div>
-      <div class="turn-bar" style="display:flex;justify-content:space-between;font-size:0.82rem;">
-        <span id="rep-step">0 / 0 手目</span>
-        <span id="rep-desc">初期盤面</span>
-      </div>
-      <div class="board-scroll" style="max-height:44vh;">
-        <div id="rep-board" class="board-grid"></div>
-      </div>
+      <div class="topbar"><h2 style="margin:0;font-size:1.1rem;">リプレイ再生（振り返り）</h2><button id="btn-close-rep" class="btn btn-sm btn-outline">結果画面へ戻る</button></div>
+      <div class="turn-bar" style="display:flex;justify-content:space-between;font-size:0.82rem;"><span id="rep-step">0 / 0 手目</span><span id="rep-desc">初期盤面</span></div>
+      <div class="board-scroll" style="max-height:44vh;"><div id="rep-board" class="board-grid"></div></div>
       <div class="row" style="justify-content:center;margin:10px 0;">
         <button id="btn-rep-0" class="btn btn-sm btn-outline">⏮ 最初</button>
         <button id="btn-rep-prev" class="btn btn-sm btn-outline">◀ 1手戻る</button>
         <button id="btn-rep-play" class="btn btn-sm btn-primary">▶ 自動再生</button>
         <button id="btn-rep-pause" class="btn btn-sm btn-warning hidden">⏸ 停止</button>
         <button id="btn-rep-next" class="btn btn-sm btn-outline">1手進む ▶</button>
-        <select id="rep-speed" class="btn btn-sm btn-outline" style="background:#0b1120;">
-          <option value="1600">0.5x</option>
-          <option value="900" selected>1.0x</option>
-          <option value="450">2.0x</option>
-          <option value="200">4.0x</option>
-        </select>
+        <select id="rep-speed" class="btn btn-sm btn-outline" style="background:#0b1120;"><option value="1600">0.5x</option><option value="900" selected>1.0x</option><option value="450">2.0x</option><option value="200">4.0x</option></select>
       </div>
       <ol id="rep-log" class="replay-log"></ol>
     </div>
   </section>
 
-  <!-- 復帰モーダル -->
-  <div id="mod-reclaim" class="modal hidden">
-    <div class="modal-body">
-      <h3 style="margin-top:0;">途中復帰の選択</h3>
-      <p class="muted">離脱中のプレイヤー枠があります。元のプレイヤーとして復帰しますか？</p>
-      <div id="reclaim-list" style="display:flex;flex-direction:column;gap:8px;"></div>
-      <button id="btn-reclaim-close" class="btn btn-outline btn-block" style="margin-top:10px;">閉じる</button>
-    </div>
-  </div>
+  <div id="mod-reclaim" class="modal hidden"><div class="modal-body"><h3 style="margin-top:0;">途中復帰の選択</h3><p class="muted">離脱中のプレイヤー枠があります。元のプレイヤーとして復帰しますか？</p><div id="reclaim-list" style="display:flex;flex-direction:column;gap:8px;"></div><button id="btn-reclaim-close" class="btn btn-outline btn-block" style="margin-top:10px;">閉じる</button></div></div>
 
-  <!-- ルールモーダル -->
-  <div id="mod-rules" class="modal hidden">
-    <div class="modal-body">
-      <h3 style="margin-top:0;">ヒトスジナワ ルール</h3>
-      <ul style="padding-left:18px;font-size:0.88rem;">
-        <li><strong>クリア条件：</strong>2マス分のお題シートの途切れた線をすべてつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
-        <li><strong>ゲームオーバー：</strong><strong>山札が0枚になった状態</strong>で、参加メンバー全員が1周連続でパスするとゲームオーバーになり、リプレイで振り返りができます。</li>
-        <li><strong>色のルール：</strong>青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>。</li>
-        <li><strong>通常のスケルトン（[重]）：</strong>すでに出してあるカードには重ねられません。<strong>手札の青・ピンク・黄のみのラインカードと2枚1組</strong>で空きマスに配置します（まっすぐで半分だけ色やツートンのスケルトンは、合成小窓のボタンでスケルトンだけ180°回転できます）。</li>
-        <li><strong>交差スケルトン（[重]）：</strong>2枚組では出せず、<strong>すでに盤面に置かれているまっすぐなラインカード（混色・2枚組で作った直線もOK）</strong>の上にのみ1枚重ねられます。</li>
-        <li><strong>直線との交差予約：</strong>カーブの壁に線を突き当てる置き方はできませんが、<strong>直線（まだ交差していない直線）</strong>に対しては後から交差スケルトンを重ねられるため、交差で通り抜けた先の反対側が壁等で塞がれていなければ配置可能です。</li>
-        <li><strong>パス制限：</strong>ラインカードや2枚組が置けるときはパスできません。出せる手が何もない時、または<strong>交差スケルトンしか置けない時</strong>はパスできます。</li>
-      </ul>
-      <button id="btn-rules-close" class="btn btn-primary btn-block">閉じる</button>
-    </div>
-  </div>
+  <div id="mod-rules" class="modal hidden"><div class="modal-body"><h3 style="margin-top:0;">ヒトスジナワ ルール</h3><ul style="padding-left:18px;font-size:0.88rem;">
+    <li><strong>クリア条件：</strong>2マス分のお題シートの途切れた線をすべてつなぎ、<strong>1本のつながった輪（複数の輪はNG）</strong>にします。</li>
+    <li><strong>ゲームオーバー：</strong><strong>山札が0枚になった状態</strong>で、参加メンバー全員が1周連続でパスするとゲームオーバーになり、リプレイで振り返りができます。</li>
+    <li><strong>色のルール：</strong>青＋ピンク＝<strong>紫</strong>／青＋黄＝<strong>緑</strong>／ピンク＋黄＝<strong>オレンジ</strong>。</li>
+    <li><strong>通常のスケルトン（[重]）：</strong>すでに出してあるカードには重ねられません。<strong>手札の青・ピンク・黄のみのラインカードと2枚1組</strong>で空きマスに配置します。</li>
+    <li><strong>交差スケルトン（[重]）：</strong>2枚組では出せず、<strong>すでに盤面に置かれているまっすぐなラインカード</strong>の上にのみ1枚重ねられます（交差で連続した直線を乗り越える配置も可能です）。</li>
+    <li><strong>パス制限：</strong>ラインカードや2枚組が置けるときはパスできません。出せる手が何もない時、または<strong>交差スケルトンしか置けない時</strong>はパスできます。</li>
+  </ul><button id="btn-rules-close" class="btn btn-primary btn-block">閉じる</button></div></div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, set, update, onValue, onDisconnect, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,get,set,update,onValue,onDisconnect,off}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC2lS1WgJeMe_vli0jijqxxzoCJ0xqOSBk",
-  authDomain: "hitosuzinawa.firebaseapp.com",
-  databaseURL: "https://hitosuzinawa-default-rtdb.firebaseio.com",
-  projectId: "hitosuzinawa",
-  storageBucket: "hitosuzinawa.firebasestorage.app",
-  messagingSenderId: "1080188434500",
-  appId: "1:1080188434500:web:379fc9de12405009396411"
-};
+const firebaseConfig={apiKey:"AIzaSyC2lS1WgJeMe_vli0jijqxxzoCJ0xqOSBk",authDomain:"hitosuzinawa.firebaseapp.com",databaseURL:"https://hitosuzinawa-default-rtdb.firebaseio.com",projectId:"hitosuzinawa",storageBucket:"hitosuzinawa.firebasestorage.app",messagingSenderId:"1080188434500",appId:"1:1080188434500:web:379fc9de12405009396411"};
+const app=initializeApp(firebaseConfig),db=getDatabase(app);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const STAMPS=["😒インサイダー？","😆ナイス✨️","😊よしよし🫳🏻","👺判断が早い！","😨やばい😱","😠よくないよぉ⤴︎","😩やっちまったなあ","😏そんな生き方でいいの？","😎速さがが足りないッ！"];
+const COLOR_INFO={0:{name:"透明",short:"",hex:"#cbd5e1"},1:{name:"青",short:"青",hex:"#38bdf8"},2:{name:"ピンク",short:"ピ",hex:"#f472b6"},3:{name:"紫",short:"紫",hex:"#a855f7"},4:{name:"黄",short:"黄",hex:"#facc15"},5:{name:"緑",short:"緑",hex:"#22c55e"},6:{name:"オレンジ",short:"橙",hex:"#fb923c"}};
+const C=1,M=2,Y=4,P=3,G=5,O=6,PRIMARY_COLORS=new Set([C,M,Y]);
+const T_PT={"0_0:N":[50,0],"0_0:W":[0,50],"0_0:S":[50,100],"0_1:N":[150,0],"0_1:E":[200,50],"0_1:S":[150,100]};
+const T_LBL={"0_0:N":[50,15],"0_0:W":[17,53],"0_0:S":[50,91],"0_1:N":[150,15],"0_1:E":[183,53],"0_1:S":[150,91]};
 
-const STAMPS = [
-  "😒インサイダー？",
-  "😆ナイス✨️",
-  "😨やばい😱",
-  "😠よくないよぉ⤴︎",
-  "😩やっちまったなあ",
-  "😏そんな生き方でいいの？",
-  "👺判断が早い！",
-  "😎速さがが足りないッ！"
+const THEMES=[
+{id:1,name:"No.01",paths:[{c1:C,c2:M,p1:"0_0:W",p2:"0_1:N",d:"M 0 50 L 130 50 Q 150 50 150 30 L 150 0"}]},
+{id:2,name:"No.02",paths:[{c1:M,c2:Y,p1:"0_0:N",p2:"0_1:E",d:"M 50 0 L 50 30 Q 50 50 70 50 L 200 50"}]},
+{id:3,name:"No.03",paths:[{c1:Y,c2:C,p1:"0_0:N",p2:"0_1:S",d:"M 50 0 L 50 30 Q 50 50 70 50 L 130 50 Q 150 50 150 70 L 150 100"}]},
+{id:4,name:"No.04",paths:[{c1:O,c2:C,p1:"0_0:N",p2:"0_1:S",d:"M 50 0 L 50 28 Q 50 48 70 48 L 130 48 Q 150 48 150 68 L 150 100"}]},
+{id:5,name:"No.05",paths:[{c1:G,c2:M,p1:"0_0:W",p2:"0_1:E",d:"M 0 50 L 55 50 Q 75 50 75 34 Q 75 18 95 18 L 138 18 Q 155 18 155 34 Q 155 50 172 50 L 200 50"}]},
+{id:6,name:"No.06",paths:[{c1:Y,c2:P,p1:"0_0:N",p2:"0_1:S",d:"M 50 0 L 50 20 Q 50 34 66 34 L 132 34 Q 150 34 150 52 L 150 100"}]},
+{id:7,name:"No.07",paths:[{c1:P,c2:M,p1:"0_0:N",p2:"0_0:S",d:"M 50 0 L 50 100"},{c1:C,c2:Y,p1:"0_0:W",p2:"0_1:S",d:"M 0 50 L 130 50 Q 150 50 150 70 L 150 100"}]},
+{id:8,name:"No.08",paths:[{c1:M,c2:M,p1:"0_1:N",p2:"0_1:S",d:"M 150 0 L 150 100"},{c1:Y,c2:C,p1:"0_0:W",p2:"0_1:E",d:"M 0 50 L 70 50 Q 95 50 105 32 Q 115 18 135 18 L 175 18 Q 188 18 192 34 L 200 50"}]},
+{id:9,name:"No.09",paths:[{c1:Y,c2:M,p1:"0_0:N",p2:"0_1:E",d:"M 50 0 L 50 24 Q 50 40 66 40 L 175 40 Q 190 40 200 50"},{c1:C,c2:C,p1:"0_0:S",p2:"0_1:S",d:"M 50 100 L 50 82 Q 50 68 66 68 L 134 68 Q 150 68 150 82 L 150 100"}]},
+{id:10,name:"No.10",paths:[{c1:P,c2:C,p1:"0_0:S",p2:"0_1:N",d:"M 50 100 L 50 56 Q 50 42 66 42 L 132 42 Q 150 42 150 24 L 150 0"},{c1:M,c2:G,p1:"0_0:W",p2:"0_1:E",d:"M 0 50 L 58 50 Q 75 50 75 34 Q 75 20 92 20 L 154 20 Q 170 20 172 35 Q 174 50 188 50 L 200 50"}]},
+{id:11,name:"No.11",paths:[{c1:Y,c2:C,p1:"0_0:N",p2:"0_1:S",d:"M 50 0 L 50 18 Q 50 32 66 32 L 134 32 Q 150 32 150 48 L 150 100"},{c1:G,c2:O,p1:"0_0:S",p2:"0_1:N",d:"M 50 100 L 50 66 Q 50 52 66 52 L 134 52 Q 150 52 150 36 L 150 0"}]},
+{id:12,name:"No.12",paths:[{c1:P,c2:Y,p1:"0_0:N",p2:"0_0:S",d:"M 50 0 L 50 100"},{c1:M,c2:M,p1:"0_0:W",p2:"0_1:S",d:"M 0 50 L 72 50 Q 88 50 92 34 Q 96 20 112 20 L 146 20 Q 162 20 162 38 L 162 72 Q 162 88 150 100"}]},
+{id:13,name:"No.13",paths:[{c1:C,c2:M,p1:"0_0:N",p2:"0_1:S",d:"M 50 0 L 50 18 Q 50 32 66 32 L 134 32 Q 150 32 150 48 L 150 100"},{c1:C,c2:C,p1:"0_0:W",p2:"0_1:E",d:"M 0 50 L 200 50"}]},
+{id:14,name:"No.14",paths:[{c1:C,c2:Y,p1:"0_0:N",p2:"0_1:E",d:"M 50 0 L 50 18 Q 50 32 66 32 L 156 32 Q 170 32 172 42 Q 174 50 188 50 L 200 50"},{c1:Y,c2:M,p1:"0_0:W",p2:"0_1:N",d:"M 0 50 L 134 50 Q 150 50 150 34 L 150 0"},{c1:M,c2:C,p1:"0_0:S",p2:"0_1:S",d:"M 50 100 L 50 82 Q 50 68 66 68 L 134 68 Q 150 68 150 82 L 150 100"}]},
+{id:15,name:"No.15",paths:[{c1:Y,c2:M,p1:"0_0:W",p2:"0_1:E",d:"M 0 50 L 200 50"},{c1:Y,c2:Y,p1:"0_0:N",p2:"0_1:S",d:"M 50 0 L 50 18 Q 50 30 66 30 L 134 30 Q 150 30 150 44 L 150 100"},{c1:C,c2:C,p1:"0_0:S",p2:"0_1:N",d:"M 50 100 L 50 64 Q 50 48 66 48 L 134 48 Q 150 48 150 32 L 150 0"}]},
+{id:16,name:"No.16",paths:[{c1:M,c2:M,p1:"0_0:S",p2:"0_1:N",d:"M 50 100 L 50 84 Q 50 70 66 70 L 134 70 Q 150 70 150 54 L 150 0"},{c1:C,c2:Y,p1:"0_0:W",p2:"0_1:S",d:"M 0 50 L 134 50 Q 150 50 150 66 L 150 100"},{c1:Y,c2:C,p1:"0_0:N",p2:"0_1:E",d:"M 50 0 L 50 16 Q 50 30 66 30 L 136 30 Q 152 30 162 42 Q 170 50 184 50 L 200 50"}]},
+{id:17,name:"No.17",paths:[{c1:P,c2:Y,p1:"0_0:N",p2:"0_0:S",d:"M 50 0 L 50 100"},{c1:M,c2:C,p1:"0_1:N",p2:"0_1:S",d:"M 150 0 L 150 100"},{c1:G,c2:P,p1:"0_0:W",p2:"0_1:E",d:"M 0 50 L 58 50 Q 75 50 75 34 Q 75 20 92 20 L 154 20 Q 170 20 174 36 Q 178 50 190 50 L 200 50"}]},
+{id:18,name:"No.18",paths:[{c1:P,c2:G,p1:"0_0:N",p2:"0_0:S",d:"M 50 0 L 50 100"},{c1:O,c2:Y,p1:"0_1:N",p2:"0_1:S",d:"M 150 0 L 150 100"},{c1:M,c2:G,p1:"0_0:W",p2:"0_1:E",d:"M 0 50 L 200 50"}]}
 ];
 
-const COLOR_INFO = {
-  0: { name: "透明", short: "", hex: "#cbd5e1" },
-  1: { name: "青", short: "青", hex: "#38bdf8" },
-  2: { name: "ピンク", short: "ピ", hex: "#f472b6" },
-  3: { name: "紫", short: "紫", hex: "#a855f7" },
-  4: { name: "黄", short: "黄", hex: "#facc15" },
-  5: { name: "緑", short: "緑", hex: "#22c55e" },
-  6: { name: "オレンジ", short: "橙", hex: "#fb923c" }
-};
-const C = 1, M = 2, Y = 4, P = 3, G = 5, O = 6;
-const PRIMARY_COLORS = new Set([C, M, Y]);
+const MISSIONS=[{id:1,stars:1,title:"1回以上交差する",type:"cross_count",target:1},{id:2,stars:2,title:"2回以上交差する",type:"cross_count",target:2},{id:3,stars:3,title:"3回以上交差する",type:"cross_count",target:3},{id:4,stars:4,title:"4回以上交差する",type:"cross_count",target:4},{id:5,stars:2,title:"スケルトンカードを2枚並べる",type:"skel_line",target:2},{id:6,stars:3,title:"スケルトンカードを3枚並べる",type:"skel_line",target:3},{id:7,stars:4,title:"スケルトンカードを4枚並べる",type:"skel_line",target:4},{id:8,stars:1,title:"単色のカードを2枚並べる",type:"solid_line",target:2},{id:9,stars:2,title:"単色のカードを3枚並べる",type:"solid_line",target:3},{id:10,stars:2,title:"直線上にカードを6枚並べる",type:"card_line",target:6},{id:11,stars:3,title:"直線上にカードを7枚並べる",type:"card_line",target:7}];
 
-const T_PT = {
-  "0_0:N": [50, 0], "0_0:W": [0, 50], "0_0:S": [50, 100],
-  "0_1:N": [150, 0], "0_1:E": [200, 50], "0_1:S": [150, 100]
-};
-const T_LBL = {
-  "0_0:N": [50, 15], "0_0:W": [17, 53], "0_0:S": [50, 91],
-  "0_1:N": [150, 15], "0_1:E": [183, 53], "0_1:S": [150, 91]
-};
-
-const THEMES = [
-  { id: 1, name: "No.01", paths: [{ c1: C, c2: M, p1: "0_0:W", p2: "0_1:N", d: "M 0 50 L 130 50 Q 150 50 150 30 L 150 0" }] },
-  { id: 2, name: "No.02", paths: [{ c1: M, c2: Y, p1: "0_0:N", p2: "0_1:E", d: "M 50 0 L 50 30 Q 50 50 70 50 L 200 50" }] },
-  { id: 3, name: "No.03", paths: [{ c1: Y, c2: C, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 30 Q 50 50 70 50 L 130 50 Q 150 50 150 70 L 150 100" }] },
-  { id: 4, name: "No.04", paths: [{ c1: O, c2: C, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 28 Q 50 48 70 48 L 130 48 Q 150 48 150 68 L 150 100" }] },
-  { id: 5, name: "No.05", paths: [{ c1: G, c2: M, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 55 50 Q 75 50 75 34 Q 75 18 95 18 L 138 18 Q 155 18 155 34 Q 155 50 172 50 L 200 50" }] },
-  { id: 6, name: "No.06", paths: [{ c1: Y, c2: P, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 20 Q 50 34 66 34 L 132 34 Q 150 34 150 52 L 150 100" }] },
-  {
-    id: 7, name: "No.07",
-    paths: [
-      { c1: P, c2: M, p1: "0_0:N", p2: "0_0:S", d: "M 50 0 L 50 100" },
-      { c1: C, c2: Y, p1: "0_0:W", p2: "0_1:S", d: "M 0 50 L 130 50 Q 150 50 150 70 L 150 100" }
-    ]
-  },
-  {
-    id: 8, name: "No.08",
-    paths: [
-      { c1: M, c2: M, p1: "0_1:N", p2: "0_1:S", d: "M 150 0 L 150 100" },
-      { c1: Y, c2: C, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 70 50 Q 95 50 105 32 Q 115 18 135 18 L 175 18 Q 188 18 192 34 L 200 50" }
-    ]
-  },
-  {
-    id: 9, name: "No.09",
-    paths: [
-      { c1: Y, c2: M, p1: "0_0:N", p2: "0_1:E", d: "M 50 0 L 50 24 Q 50 40 66 40 L 175 40 Q 190 40 200 50" },
-      { c1: C, c2: C, p1: "0_0:S", p2: "0_1:S", d: "M 50 100 L 50 82 Q 50 68 66 68 L 134 68 Q 150 68 150 82 L 150 100" }
-    ]
-  },
-  {
-    id: 10, name: "No.10",
-    paths: [
-      { c1: P, c2: C, p1: "0_0:S", p2: "0_1:N", d: "M 50 100 L 50 56 Q 50 42 66 42 L 132 42 Q 150 42 150 24 L 150 0" },
-      { c1: M, c2: G, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 58 50 Q 75 50 75 34 Q 75 20 92 20 L 154 20 Q 170 20 172 35 Q 174 50 188 50 L 200 50" }
-    ]
-  },
-  {
-    id: 11, name: "No.11",
-    paths: [
-      { c1: Y, c2: C, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 18 Q 50 32 66 32 L 134 32 Q 150 32 150 48 L 150 100" },
-      { c1: G, c2: O, p1: "0_0:S", p2: "0_1:N", d: "M 50 100 L 50 66 Q 50 52 66 52 L 134 52 Q 150 52 150 36 L 150 0" }
-    ]
-  },
-  {
-    id: 12, name: "No.12",
-    paths: [
-      { c1: P, c2: Y, p1: "0_0:N", p2: "0_0:S", d: "M 50 0 L 50 100" },
-      { c1: M, c2: M, p1: "0_0:W", p2: "0_1:S", d: "M 0 50 L 72 50 Q 88 50 92 34 Q 96 20 112 20 L 146 20 Q 162 20 162 38 L 162 72 Q 162 88 150 100" }
-    ]
-  },
-  {
-    id: 13, name: "No.13",
-    paths: [
-      { c1: C, c2: M, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 18 Q 50 32 66 32 L 134 32 Q 150 32 150 48 L 150 100" },
-      { c1: C, c2: C, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 200 50" }
-    ]
-  },
-  {
-    id: 14, name: "No.14",
-    paths: [
-      { c1: C, c2: Y, p1: "0_0:N", p2: "0_1:E", d: "M 50 0 L 50 18 Q 50 32 66 32 L 156 32 Q 170 32 172 42 Q 174 50 188 50 L 200 50" },
-      { c1: Y, c2: M, p1: "0_0:W", p2: "0_1:N", d: "M 0 50 L 134 50 Q 150 50 150 34 L 150 0" },
-      { c1: M, c2: C, p1: "0_0:S", p2: "0_1:S", d: "M 50 100 L 50 82 Q 50 68 66 68 L 134 68 Q 150 68 150 82 L 150 100" }
-    ]
-  },
-  {
-    id: 15, name: "No.15",
-    paths: [
-      { c1: Y, c2: M, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 200 50" },
-      { c1: Y, c2: Y, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 18 Q 50 30 66 30 L 134 30 Q 150 30 150 44 L 150 100" },
-      { c1: C, c2: C, p1: "0_0:S", p2: "0_1:N", d: "M 50 100 L 50 64 Q 50 48 66 48 L 134 48 Q 150 48 150 32 L 150 0" }
-    ]
-  },
-  {
-    id: 16, name: "No.16",
-    paths: [
-      { c1: M, c2: M, p1: "0_0:S", p2: "0_1:N", d: "M 50 100 L 50 84 Q 50 70 66 70 L 134 70 Q 150 70 150 54 L 150 0" },
-      { c1: C, c2: Y, p1: "0_0:W", p2: "0_1:S", d: "M 0 50 L 134 50 Q 150 50 150 66 L 150 100" },
-      { c1: Y, c2: C, p1: "0_0:N", p2: "0_1:E", d: "M 50 0 L 50 16 Q 50 30 66 30 L 136 30 Q 152 30 162 42 Q 170 50 184 50 L 200 50" }
-    ]
-  },
-  {
-    id: 17, name: "No.17",
-    paths: [
-      { c1: P, c2: Y, p1: "0_0:N", p2: "0_0:S", d: "M 50 0 L 50 100" },
-      { c1: M, c2: C, p1: "0_1:N", p2: "0_1:S", d: "M 150 0 L 150 100" },
-      { c1: G, c2: P, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 58 50 Q 75 50 75 34 Q 75 20 92 20 L 154 20 Q 170 20 174 36 Q 178 50 190 50 L 200 50" }
-    ]
-  },
-  {
-    id: 18, name: "No.18",
-    paths: [
-      { c1: P, c2: G, p1: "0_0:N", p2: "0_0:S", d: "M 50 0 L 50 100" },
-      { c1: O, c2: Y, p1: "0_1:N", p2: "0_1:S", d: "M 150 0 L 150 100" },
-      { c1: M, c2: G, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 200 50" }
-    ]
-  }
-];
-
-const MISSIONS = [
-  { id: 1, stars: 1, title: "1回以上交差する", type: "cross_count", target: 1 },
-  { id: 2, stars: 2, title: "2回以上交差する", type: "cross_count", target: 2 },
-  { id: 3, stars: 3, title: "3回以上交差する", type: "cross_count", target: 3 },
-  { id: 4, stars: 4, title: "4回以上交差する", type: "cross_count", target: 4 },
-  { id: 5, stars: 2, title: "スケルトンカードを2枚並べる", type: "skel_line", target: 2 },
-  { id: 6, stars: 3, title: "スケルトンカードを3枚並べる", type: "skel_line", target: 3 },
-  { id: 7, stars: 4, title: "スケルトンカードを4枚並べる", type: "skel_line", target: 4 },
-  { id: 8, stars: 1, title: "単色のカードを2枚並べる", type: "solid_line", target: 2 },
-  { id: 9, stars: 2, title: "単色のカードを3枚並べる", type: "solid_line", target: 3 },
-  { id: 10, stars: 2, title: "直線上にカードを6枚並べる", type: "card_line", target: 6 },
-  { id: 11, stars: 3, title: "直線上にカードを7枚並べる", type: "card_line", target: 7 }
-];
-
-function createDeck() {
-  const deck = [];
-  let seq = 1;
-  const push = (type, shape, ca, cb, count) => {
-    for (let i = 0; i < count; i++) {
-      deck.push({ id: `c${seq++}`, type, shape, ca, cb, heavy: type !== "line" });
-    }
-  };
-
-  push("line", "straight", C, C, 4);
-  push("line", "straight", M, M, 5);
-  push("line", "straight", Y, Y, 3);
-  push("line", "straight", C, M, 3);
-  push("line", "straight", C, Y, 5);
-  push("line", "straight", M, Y, 4);
-  push("line", "straight", P, P, 1);
-  push("line", "straight", G, G, 1);
-  push("line", "straight", O, O, 1);
-  push("line", "straight", C, P, 1);
-  push("line", "straight", M, P, 1);
-  push("line", "straight", Y, P, 1);
-  push("line", "straight", C, G, 1);
-  push("line", "straight", M, G, 1);
-  push("line", "straight", Y, G, 1);
-  push("line", "straight", C, O, 1);
-  push("line", "straight", M, O, 1);
-  push("line", "straight", Y, O, 1);
-
-  push("line", "curve", C, C, 2);
-  push("line", "curve", M, M, 4);
-  push("line", "curve", Y, Y, 2);
-  push("line", "curve", M, C, 2);
-  push("line", "curve", C, Y, 2);
-  push("line", "curve", Y, C, 2);
-  push("line", "curve", M, Y, 2);
-  push("line", "curve", Y, M, 2);
-  push("line", "curve", P, C, 1);
-  push("line", "curve", P, M, 1);
-  push("line", "curve", P, Y, 1);
-  push("line", "curve", G, C, 1);
-  push("line", "curve", G, M, 1);
-  push("line", "curve", G, Y, 1);
-  push("line", "curve", O, C, 1);
-  push("line", "curve", O, M, 1);
-  push("line", "curve", O, Y, 1);
-
-  push("skel", "straight", C, 0, 4);
-  push("skel", "straight", M, 0, 4);
-  push("skel", "straight", Y, 0, 4);
-  push("skel", "straight", C, M, 2);
-  push("skel", "straight", C, Y, 2);
-  push("skel", "straight", M, Y, 2);
-
-  push("skel", "curve", 0, C, 2);
-  push("skel", "curve", 0, M, 2);
-  push("skel", "curve", 0, Y, 2);
-  push("skel", "curve", Y, M, 1);
-  push("skel", "curve", C, Y, 1);
-  push("skel", "curve", M, C, 1);
-
-  push("cross", "straight", C, C, 1);
-  push("cross", "straight", M, M, 1);
-  push("cross", "straight", Y, Y, 1);
-  push("cross", "straight", C, M, 2);
-  push("cross", "straight", C, Y, 2);
-  push("cross", "straight", M, Y, 1);
-
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
+function createDeck(){
+  const deck=[];let seq=1;
+  const add=(t,s,a,b,n)=>{for(let i=0;i<n;i++)deck.push({id:`c${seq++}`,type:t,shape:s,ca:a,cb:b,heavy:t!=="line"})};
+  [["line","straight",[[C,C,4],[M,M,5],[Y,Y,3],[C,M,3],[C,Y,5],[M,Y,4],[P,P,1],[G,G,1],[O,O,1],[C,P,1],[M,P,1],[Y,P,1],[C,G,1],[M,G,1],[Y,G,1],[C,O,1],[M,O,1],[Y,O,1]]],
+   ["line","curve",[[C,C,2],[M,M,4],[Y,Y,2],[M,C,2],[C,Y,2],[Y,C,2],[M,Y,2],[Y,M,2],[P,C,1],[P,M,1],[P,Y,1],[G,C,1],[G,M,1],[G,Y,1],[O,C,1],[O,M,1],[O,Y,1]]],
+   ["skel","straight",[[C,0,4],[M,0,4],[Y,0,4],[C,M,2],[C,Y,2],[M,Y,2]]],
+   ["skel","curve",[[0,C,2],[0,M,2],[0,Y,2],[Y,M,1],[C,Y,1],[M,C,1]]],
+   ["cross","straight",[[C,C,1],[M,M,1],[Y,Y,1],[C,M,2],[C,Y,2],[M,Y,1]]]
+  ].forEach(([t,s,list])=>list.forEach(([a,b,n])=>add(t,s,a,b,n)));
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
   return deck;
 }
 
-function buildThemeBoardCells(theme) {
-  const ports00 = {};
-  const ports01 = {};
-  theme.paths.forEach((p) => {
-    const [c1, d1] = p.p1.split(":");
-    const [c2, d2] = p.p2.split(":");
-    if (c1 === "0_0") ports00[d1] = p.c1; else ports01[d1] = p.c1;
-    if (c2 === "0_0") ports00[d2] = p.c2; else ports01[d2] = p.c2;
-  });
-  return {
-    "0_0": { fixed: true, themeId: theme.id, side: "left", ports: ports00, segs: [], layers: [], hasHeavy: false, hasCross: false },
-    "0_1": { fixed: true, themeId: theme.id, side: "right", ports: ports01, segs: [], layers: [], hasHeavy: false, hasCross: false }
-  };
+function buildThemeBoardCells(theme){
+  const ports00={},ports01={};
+  theme.paths.forEach(p=>{const[c1,d1]=p.p1.split(":"),[c2,d2]=p.p2.split(":");if(c1==="0_0")ports00[d1]=p.c1;else ports01[d1]=p.c1;if(c2==="0_0")ports00[d2]=p.c2;else ports01[d2]=p.c2;});
+  return{"0_0":{fixed:true,themeId:theme.id,side:"left",ports:ports00,segs:[],layers:[],hasHeavy:false,hasCross:false},"0_1":{fixed:true,themeId:theme.id,side:"right",ports:ports01,segs:[],layers:[],hasHeavy:false,hasCross:false}};
+}
+function getCellPortColors(cell,dir){if(!cell)return[];if(cell.fixed){const v=cell.ports?.[dir];return v!==undefined?[v]:[];}return(cell.segs||[]).map(s=>portColor(s,dir)).filter(v=>v!==null);}
+function canOverlayColorSkel(c){return!!c&&c.type==="line"&&PRIMARY_COLORS.has(c.ca)&&PRIMARY_COLORS.has(c.cb);}
+function canFlipStraightSkel(sel){if(!sel||sel.length!==2)return false;const l=sel.find(x=>x.type==="line"),s=sel.find(x=>x.type==="skel");return!!(l&&s&&l.shape==="straight"&&s.shape==="straight"&&s.ca!==s.cb&&canOverlayColorSkel(l));}
+function isCrossableStraightCell(cell){if(!cell||cell.fixed)return false;if(cell.hasCross||(cell.segs&&cell.segs.length>=2))return false;return cell.layers?.[0]?.card?.shape==="straight";}
+
+const DIRS=["N","E","S","W"],OPP={N:"S",E:"W",S:"N",W:"E"},DELTA={N:[-1,0],E:[0,1],S:[1,0],W:[0,-1]};
+const rotDir=(d,r)=>DIRS[(DIRS.indexOf(d)+(r%4)+4)%4];
+const cardToSeg=(c,r)=>({a:rotDir("N",r),b:rotDir(c.shape==="straight"?"S":"E",r),ca:c.ca,cb:c.cb});
+const sameEdgePair=(s1,s2)=>(s1.a===s2.a&&s1.b===s2.b)||(s1.a===s2.b&&s1.b===s2.a);
+const portColor=(s,d)=>s.a===d?s.ca:(s.b===d?s.cb:null);
+const overlaySeg=(b,sk)=>sameEdgePair(b,sk)?{a:b.a,b:b.b,ca:b.ca|portColor(sk,b.a),cb:b.cb|portColor(sk,b.b)}:null;
+
+function composeSelection(selected,rot,flipSkel=false){
+  if(!selected.length)return{ok:false,err:"手札からカードを選択してください。"};
+  if(selected.length>2)return{ok:false,err:"同時に選択できるのは2枚までです。"};
+  if(selected.length===1){const c0=selected[0];return{ok:true,mode:c0.type==="line"?"single-line":"single-skel",segs:[cardToSeg(c0,rot)],cardType:c0.type};}
+  const lineC=selected.find(x=>x.type==="line"),heavyC=selected.find(x=>x.type!=="line");
+  if(!lineC||!heavyC)return{ok:false,err:"2枚同時選択は「ラインカード＋通常スケルトンカード」の組み合わせのみ可能です。"};
+  if(heavyC.type==="cross")return{ok:false,err:"交差スケルトンカードは2枚組では使えません。盤面に置かれているまっすぐな線に重ねてください。"};
+  if(!canOverlayColorSkel(lineC))return{ok:false,err:"すでに混色（紫・緑・オレンジ）を含むカードには通常スケルトンを重ねられません。"};
+  if(lineC.shape!==heavyC.shape)return{ok:false,err:"同じ形（まっすぐ同士／まがった線同士）でないと重ねられません。"};
+  const skRot=(canFlipStraightSkel(selected)&&flipSkel)?(rot+2)%4:rot;
+  return{ok:true,mode:"combo",segs:[overlaySeg(cardToSeg(lineC,rot),cardToSeg(heavyC,skRot))],layers:[{card:lineC,rot},{card:heavyC,rot:skRot}],cardType:"line"};
 }
 
-function getCellPortColors(cell, dir) {
-  if (!cell) return [];
-  if (cell.fixed) {
-    const v = cell.ports?.[dir];
-    return v !== undefined ? [v] : [];
+/* 連続する直線も交差で通り抜けて空きマス・同色線まで到達できるか判定 */
+function checkCrossExit(board,fromR,fromC,dir,crossColor){
+  const[dr,dc]=DELTA[dir];
+  let cr=fromR+dr,cc=fromC+dc;
+  for(let step=0;step<30;step++){
+    const nb=board[`${cr}_${cc}`];
+    if(!nb)return true;
+    const ports=getCellPortColors(nb,OPP[dir]);
+    if(ports.length>0)return ports[0]===crossColor;
+    if(!isCrossableStraightCell(nb))return false;
+    cr+=dr;cc+=dc;
   }
-  return (cell.segs || []).map((s) => portColor(s, dir)).filter((v) => v !== null);
-}
-
-function canOverlayColorSkel(card) {
-  return !!card && card.type === "line" && PRIMARY_COLORS.has(card.ca) && PRIMARY_COLORS.has(card.cb);
-}
-
-function canFlipStraightSkel(selected) {
-  if (!selected || selected.length !== 2) return false;
-  const lineC = selected.find((x) => x.type === "line");
-  const skelC = selected.find((x) => x.type === "skel");
-  return !!(lineC && skelC && lineC.shape === "straight" && skelC.shape === "straight" && skelC.ca !== skelC.cb && canOverlayColorSkel(lineC));
-}
-
-function isCrossableStraightCell(cell) {
-  if (!cell || cell.fixed) return false;
-  const isCrossed = !!cell.hasCross || (cell.segs && cell.segs.length >= 2);
-  if (isCrossed) return false;
-  return cell.layers?.[0]?.card?.shape === "straight";
-}
-
-const DIRS = ["N", "E", "S", "W"];
-const OPP = { N: "S", E: "W", S: "N", W: "E" };
-const DELTA = { N: [-1, 0], E: [0, 1], S: [1, 0], W: [0, -1] };
-
-function rotDir(d, r) { return DIRS[(DIRS.indexOf(d) + (r % 4) + 4) % 4]; }
-
-function cardToSeg(card, rot) {
-  const a0 = "N";
-  const b0 = card.shape === "straight" ? "S" : "E";
-  return { a: rotDir(a0, rot), b: rotDir(b0, rot), ca: card.ca, cb: card.cb };
-}
-
-function sameEdgePair(s1, s2) {
-  return (s1.a === s2.a && s1.b === s2.b) || (s1.a === s2.b && s1.b === s2.a);
-}
-
-function portColor(seg, dir) {
-  if (seg.a === dir) return seg.ca;
-  if (seg.b === dir) return seg.cb;
-  return null;
-}
-
-function overlaySeg(baseSeg, skelSeg) {
-  if (!sameEdgePair(baseSeg, skelSeg)) return null;
-  const cA = baseSeg.ca | portColor(skelSeg, baseSeg.a);
-  const cB = baseSeg.cb | portColor(skelSeg, baseSeg.b);
-  return { a: baseSeg.a, b: baseSeg.b, ca: cA, cb: cB };
-}
-
-function composeSelection(selected, rot, flipSkel = false) {
-  if (!selected.length) return { ok: false, err: "手札からカードを選択してください。" };
-  if (selected.length > 2) return { ok: false, err: "同時に選択できるのは2枚までです。" };
-
-  if (selected.length === 1) {
-    const c0 = selected[0];
-    return {
-      ok: true,
-      mode: c0.type === "line" ? "single-line" : "single-skel",
-      segs: [cardToSeg(c0, rot)],
-      cardType: c0.type
-    };
-  }
-  const lineC = selected.find((x) => x.type === "line");
-  const heavyC = selected.find((x) => x.type !== "line");
-  if (!lineC || !heavyC) {
-    return { ok: false, err: "2枚同時選択は「ラインカード＋通常スケルトンカード」の組み合わせのみ可能です。" };
-  }
-  if (heavyC.type === "cross") {
-    return { ok: false, err: "交差スケルトンカードは2枚組では使えません。盤面に置かれているまっすぐな線に重ねてください。" };
-  }
-  if (!canOverlayColorSkel(lineC)) {
-    return { ok: false, err: "すでに混色（紫・緑・オレンジ）を含むカードには通常スケルトンを重ねられません。" };
-  }
-  if (lineC.shape !== heavyC.shape) {
-    return { ok: false, err: "同じ形（まっすぐ同士／まがった線同士）でないと重ねられません。" };
-  }
-  const skRot = (canFlipStraightSkel(selected) && flipSkel) ? (rot + 2) % 4 : rot;
-  const baseSeg = cardToSeg(lineC, rot);
-  const skSeg = cardToSeg(heavyC, skRot);
-  return {
-    ok: true,
-    mode: "combo",
-    segs: [overlaySeg(baseSeg, skSeg)],
-    layers: [{ card: lineC, rot }, { card: heavyC, rot: skRot }],
-    cardType: "line"
-  };
-}
-
-function checkCrossExit(board, fromR, fromC, dir, crossColor) {
-  const [dr, dc] = DELTA[dir];
-  const exitNb = board[`${fromR + dr}_${fromC + dc}`];
-  if (!exitNb) return true;
-  const exitPorts = getCellPortColors(exitNb, OPP[dir]);
-  if (exitPorts.length > 0) return exitPorts[0] === crossColor;
   return false;
 }
 
-function validatePlace({ board, r, c, selected, rot, flipSkel = false }) {
-  const comp = composeSelection(selected, rot, flipSkel);
-  if (!comp.ok) return comp;
+function validatePlace({board,r,c,selected,rot,flipSkel=false}){
+  const comp=composeSelection(selected,rot,flipSkel);
+  if(!comp.ok)return comp;
+  const key=`${r}_${c}`,exist=board[key]||null;
+  if(exist&&exist.fixed)return{ok:false,err:"お題シートの上には置けません。"};
 
-  const key = `${r}_${c}`;
-  const exist = board[key] || null;
-  if (exist && exist.fixed) return { ok: false, err: "お題シートの上には置けません。" };
-
-  let newSegs = null;
-  let newLayers = exist ? [...(exist.layers || [])] : [];
-  let hasHeavy = exist ? !!exist.hasHeavy : false;
-  let hasCross = exist ? (!!exist.hasCross || (exist.segs && exist.segs.length >= 2)) : false;
-
-  if (!exist) {
-    if (selected.length === 1) {
-      const card = selected[0];
-      if (card.type !== "line") {
-        return {
-          ok: false,
-          err: card.type === "cross"
-            ? "交差スケルトンはすでに盤面にあるまっすぐな線にのみ重ねられます。"
-            : "通常のスケルトンカードは単体では置けません。手札のラインカードと2枚1組で配置してください。"
-        };
-      }
-      newSegs = comp.segs;
-      newLayers = [{ card, rot }];
-    } else {
-      newSegs = comp.segs;
-      newLayers = comp.layers;
-      hasHeavy = true;
-    }
-  } else {
-    if (selected.length !== 1) return { ok: false, err: "すでに置かれているカードには交差スケルトン1枚だけ重ねられます。" };
-    const card = selected[0];
-    if (card.type !== "cross") {
-      return {
-        ok: false,
-        err: card.type === "skel"
-          ? "通常のスケルトンカードはすでに出してあるカードの上には配置できません（手札のラインと2枚組で空きマスに出してください）。"
-          : "すでにカードがあるマスにはラインカードを重ねられません。"
-      };
-    }
-    if (hasCross) return { ok: false, err: "この場所にはすでに交差スケルトンが重ねられています。" };
-
-    const baseLayer = exist.layers[0];
-    const baseSeg = exist.segs[0];
-    if (baseLayer.card.shape !== "straight") return { ok: false, err: "交差スケルトンはまっすぐなラインカードの上にのみ重ねられます。" };
-    const perpRot = (baseLayer.rot + 1) % 4;
-    const useRot = (rot % 2 === perpRot % 2) ? rot : perpRot;
-    const crossSeg = cardToSeg(card, useRot);
-    newSegs = [baseSeg, crossSeg];
-    newLayers.push({ card, rot: useRot });
-    hasHeavy = true;
-    hasCross = true;
+  let newSegs=null,newLayers=exist?[...(exist.layers||[])]:[],hasHeavy=exist?!!exist.hasHeavy:false,hasCross=exist?(!!exist.hasCross||(exist.segs&&exist.segs.length>=2)):false;
+  if(!exist){
+    if(selected.length===1){
+      const card=selected[0];
+      if(card.type!=="line")return{ok:false,err:card.type==="cross"?"交差スケルトンはすでに盤面にあるまっすぐな線にのみ重ねられます。":"通常のスケルトンカードは単体では置けません。手札のラインカードと2枚1組で配置してください。"};
+      newSegs=comp.segs;newLayers=[{card,rot}];
+    }else{newSegs=comp.segs;newLayers=comp.layers;hasHeavy=true;}
+  }else{
+    if(selected.length!==1)return{ok:false,err:"すでに置かれているカードには交差スケルトン1枚だけ重ねられます。"};
+    const card=selected[0];
+    if(card.type!=="cross")return{ok:false,err:card.type==="skel"?"通常のスケルトンカードはすでに出してあるカードの上には配置できません。":"すでにカードがあるマスにはラインカードを重ねられません。"};
+    if(hasCross)return{ok:false,err:"この場所にはすでに交差スケルトンが重ねられています。"};
+    const baseLayer=exist.layers[0],baseSeg=exist.segs[0];
+    if(baseLayer.card.shape!=="straight")return{ok:false,err:"交差スケルトンはまっすぐなラインカードの上にのみ重ねられます。"};
+    const perpRot=(baseLayer.rot+1)%4,useRot=(rot%2===perpRot%2)?rot:perpRot;
+    newSegs=[baseSeg,cardToSeg(card,useRot)];newLayers.push({card,rot:useRot});hasHeavy=true;hasCross=true;
   }
 
-  let touches = 0;
-  const selfCanCrossLater = !hasCross && newLayers[0]?.card?.shape === "straight";
-
-  for (const dir of DIRS) {
-    const [dr, dc] = DELTA[dir];
-    const nr = r + dr, nc = c + dc;
-    const nb = board[`${nr}_${nc}`];
-    const myPorts = newSegs.map((s) => portColor(s, dir)).filter((v) => v !== null);
-    if (!nb) continue;
-    const nbPorts = getCellPortColors(nb, OPP[dir]);
-
-    if (myPorts.length === 0 && nbPorts.length > 0) {
-      if (!(selfCanCrossLater && PRIMARY_COLORS.has(nbPorts[0]) && checkCrossExit(board, r, c, OPP[dir], nbPorts[0]))) {
-        return { ok: false, err: "隣の線を交差で逃がしても反対側のカード（カーブ等）に当たってしまうため置けません。" };
-      }
+  let touches=0;
+  const selfCanCrossLater=!hasCross&&newLayers[0]?.card?.shape==="straight";
+  for(const dir of DIRS){
+    const[dr,dc]=DELTA[dir],nr=r+dr,nc=c+dc,nb=board[`${nr}_${nc}`];
+    const myPorts=newSegs.map(s=>portColor(s,dir)).filter(v=>v!==null);
+    if(!nb)continue;
+    const nbPorts=getCellPortColors(nb,OPP[dir]);
+    if(myPorts.length===0&&nbPorts.length>0){
+      if(!(selfCanCrossLater&&PRIMARY_COLORS.has(nbPorts[0])&&checkCrossExit(board,r,c,OPP[dir],nbPorts[0])))return{ok:false,err:"隣の線を交差で逃がしても反対側のカード（カーブ等）に当たってしまうため置けません。"};
       continue;
     }
-    if (myPorts.length > 0 && nbPorts.length === 0) {
-      if (!(isCrossableStraightCell(nb) && PRIMARY_COLORS.has(myPorts[0]) && checkCrossExit(board, nr, nc, dir, myPorts[0]))) {
-        return { ok: false, err: "隣のカード（カーブや行き止まり）に線がぶつかってしまいます。" };
-      }
+    if(myPorts.length>0&&nbPorts.length===0){
+      if(!(isCrossableStraightCell(nb)&&PRIMARY_COLORS.has(myPorts[0])&&checkCrossExit(board,nr,nc,dir,myPorts[0])))return{ok:false,err:"隣のカード（カーブや行き止まり）に線がぶつかってしまいます。"};
       continue;
     }
-    if (myPorts.length > 0 && nbPorts.length > 0) {
-      if (myPorts[0] !== nbPorts[0]) {
-        return { ok: false, err: `隣の「${COLOR_INFO[nbPorts[0]].name}」の線と色（${COLOR_INFO[myPorts[0]].name}）が合いません（↻回転で調整可）。` };
-      }
+    if(myPorts.length>0&&nbPorts.length>0){
+      if(myPorts[0]!==nbPorts[0])return{ok:false,err:`隣の「${COLOR_INFO[nbPorts[0]].name}」の線と色（${COLOR_INFO[myPorts[0]].name}）が合いません（↻回転で調整可）。`};
       touches++;
     }
   }
-  if (!exist && touches === 0) {
-    return { ok: false, err: "必ず既存の線と1箇所以上つながる場所に配置してください。" };
-  }
-  return { ok: true, cell: { segs: newSegs, layers: newLayers, hasHeavy, hasCross, fixed: false } };
+  if(!exist&&touches===0)return{ok:false,err:"必ず既存の線と1箇所以上つながる場所に配置してください。"};
+  return{ok:true,cell:{segs:newSegs,layers:newLayers,hasHeavy,hasCross,fixed:false}};
 }
 
-function findFirstValidMove(board, hand, includeCross = true) {
-  if (!hand || !hand.length) return null;
-
-  if (includeCross) {
-    for (const [key, cell] of Object.entries(board)) {
-      if (!isCrossableStraightCell(cell)) continue;
-      const [r, c] = key.split("_").map(Number);
-      for (const card of hand) {
-        if (card.type !== "cross") continue;
-        for (let rot = 0; rot < 4; rot++) {
-          if (validatePlace({ board, r, c, selected: [card], rot }).ok) {
-            return { key, r, c, cards: [card], rot, flipSkel: false, desc: `盤面の (${r}, ${c}) に「交差スケルトン」を重ねられます` };
-          }
-        }
-      }
+function findFirstValidMove(board,hand,includeCross=true){
+  if(!hand||!hand.length)return null;
+  if(includeCross){
+    for(const[key,cell]of Object.entries(board)){
+      if(!isCrossableStraightCell(cell))continue;
+      const[r,c]=key.split("_").map(Number);
+      for(const card of hand){if(card.type!=="cross")continue;for(let rot=0;rot<4;rot++)if(validatePlace({board,r,c,selected:[card],rot}).ok)return{key,r,c,cards:[card],rot,flipSkel:false,desc:`盤面の (${r}, ${c}) に「交差スケルトン」を重ねられます`};}
     }
   }
-
-  const emptySet = new Set();
-  for (const key of Object.keys(board)) {
-    const [r, c] = key.split("_").map(Number);
-    for (const [dr, dc] of Object.values(DELTA)) {
-      const nk = `${r + dr}_${c + dc}`;
-      if (!board[nk]) emptySet.add(nk);
-    }
-  }
-
-  const lines = hand.filter((c) => c.type === "line");
-  const skels = hand.filter((c) => c.type === "skel");
-
-  for (const nk of emptySet) {
-    const [r, c] = nk.split("_").map(Number);
-    for (const l of lines) {
-      for (let rot = 0; rot < 4; rot++) {
-        if (validatePlace({ board, r, c, selected: [l], rot }).ok) {
-          return { key: nk, r, c, cards: [l], rot, flipSkel: false, desc: `マス (${r}, ${c}) に「ライン（${COLOR_INFO[l.ca].name}↔${COLOR_INFO[l.cb].name}）」を置けます` };
-        }
-      }
-    }
-    for (const l of lines) {
-      if (!canOverlayColorSkel(l)) continue;
-      for (const s of skels) {
-        if (l.shape !== s.shape) continue;
-        const flips = (l.shape === "straight" && s.ca !== s.cb) ? [false, true] : [false];
-        for (const flipSkel of flips) {
-          for (let rot = 0; rot < 4; rot++) {
-            if (validatePlace({ board, r, c, selected: [l, s], rot, flipSkel }).ok) {
-              return { key: nk, r, c, cards: [l, s], rot, flipSkel, desc: `マス (${r}, ${c}) に「ライン＋スケルトン」の2枚組を置けます` };
-            }
-          }
-        }
+  const emptySet=new Set();
+  for(const key of Object.keys(board)){const[r,c]=key.split("_").map(Number);for(const[dr,dc]of Object.values(DELTA)){const nk=`${r+dr}_${c+dc}`;if(!board[nk])emptySet.add(nk);}}
+  const lines=hand.filter(c=>c.type==="line"),skels=hand.filter(c=>c.type==="skel");
+  for(const nk of emptySet){
+    const[r,c]=nk.split("_").map(Number);
+    for(const l of lines)for(let rot=0;rot<4;rot++)if(validatePlace({board,r,c,selected:[l],rot}).ok)return{key:nk,r,c,cards:[l],rot,flipSkel:false,desc:`マス (${r}, ${c}) に「ライン（${COLOR_INFO[l.ca].name}↔${COLOR_INFO[l.cb].name}）」を置けます`};
+    for(const l of lines){
+      if(!canOverlayColorSkel(l))continue;
+      for(const s of skels){
+        if(l.shape!==s.shape)continue;
+        for(const flipSkel of((l.shape==="straight"&&s.ca!==s.cb)?[false,true]:[false]))for(let rot=0;rot<4;rot++)if(validatePlace({board,r,c,selected:[l,s],rot,flipSkel}).ok)return{key:nk,r,c,cards:[l,s],rot,flipSkel,desc:`マス (${r}, ${c}) に「ライン＋スケルトン」の2枚組を置けます`};
       }
     }
   }
   return null;
 }
 
-function buildPreviewCell(board, r, c, selected, rot, flipSkel = false) {
-  const res = validatePlace({ board, r, c, selected, rot, flipSkel });
-  if (res.ok) return { ok: true, cell: res.cell };
-  const exist = board[`${r}_${c}`];
-  const comp = composeSelection(selected, rot, flipSkel);
-  if (!comp.ok) return { ok: false, err: comp.err, cell: null };
-  if (!exist && selected.length === 1 && selected[0].type !== "line") {
-    return { ok: false, err: res.err, cell: null };
-  }
-  if (exist && (!isCrossableStraightCell(exist) || selected.length !== 1 || selected[0].type !== "cross")) {
-    return { ok: false, err: res.err, cell: null };
-  }
-  if (exist) {
-    const baseLayer = exist.layers[0];
-    const card = selected[0];
-    const perpRot = (baseLayer.rot + 1) % 4;
-    const useRot = (rot % 2 === perpRot % 2) ? rot : perpRot;
-    return { ok: false, err: res.err, cell: { segs: [exist.segs[0], cardToSeg(card, useRot)], hasHeavy: true, hasCross: true } };
-  }
-  return { ok: false, err: res.err, cell: { segs: comp.segs, hasHeavy: selected.length === 2 } };
+function buildPreviewCell(board,r,c,selected,rot,flipSkel=false){
+  const res=validatePlace({board,r,c,selected,rot,flipSkel});
+  if(res.ok)return{ok:true,cell:res.cell};
+  const exist=board[`${r}_${c}`],comp=composeSelection(selected,rot,flipSkel);
+  if(!comp.ok)return{ok:false,err:comp.err,cell:null};
+  if(!exist&&selected.length===1&&selected[0].type!=="line")return{ok:false,err:res.err,cell:null};
+  if(exist&&(!isCrossableStraightCell(exist)||selected.length!==1||selected[0].type!=="cross"))return{ok:false,err:res.err,cell:null};
+  if(exist){const perpRot=(exist.layers[0].rot+1)%4,useRot=(rot%2===perpRot%2)?rot:perpRot;return{ok:false,err:res.err,cell:{segs:[exist.segs[0],cardToSeg(selected[0],useRot)],hasHeavy:true,hasCross:true}};}
+  return{ok:false,err:res.err,cell:{segs:comp.segs,hasHeavy:selected.length===2}};
 }
 
-function checkClear(board, themeId) {
-  const theme = THEMES.find((t) => t.id === themeId) || THEMES[0];
-  const nodes = [];
-  const nodeMap = new Map();
-
-  theme.paths.forEach((p, idx) => {
-    const [c1, d1] = p.p1.split(":");
-    const [c2, d2] = p.p2.split(":");
-    const [r1, col1] = c1.split("_").map(Number);
-    const [r2, col2] = c2.split("_").map(Number);
-    const id = `THEME#${idx}`;
-    const node = {
-      id,
-      ends: [
-        { r: r1, c: col1, dir: d1, col: p.c1 },
-        { r: r2, c: col2, dir: d2, col: p.c2 }
-      ],
-      adj: []
-    };
-    nodes.push(node);
-    nodeMap.set(id, node);
+function checkClear(board,themeId){
+  const theme=THEMES.find(t=>t.id===themeId)||THEMES[0],nodes=[],nodeMap=new Map();
+  theme.paths.forEach((p,idx)=>{
+    const[c1,d1]=p.p1.split(":"),[c2,d2]=p.p2.split(":"),[r1,col1]=c1.split("_").map(Number),[r2,col2]=c2.split("_").map(Number);
+    const id=`THEME#${idx}`,node={id,ends:[{r:r1,c:col1,dir:d1,col:p.c1},{r:r2,c:col2,dir:d2,col:p.c2}],adj:[]};
+    nodes.push(node);nodeMap.set(id,node);
   });
-
-  Object.entries(board).forEach(([key, cell]) => {
-    if (cell.fixed) return;
-    const [r, c] = key.split("_").map(Number);
-    (cell.segs || []).forEach((seg, idx) => {
-      const id = `${key}#${idx}`;
-      const node = {
-        id,
-        ends: [
-          { r, c, dir: seg.a, col: seg.ca },
-          { r, c, dir: seg.b, col: seg.cb }
-        ],
-        adj: []
-      };
-      nodes.push(node);
-      nodeMap.set(id, node);
-    });
+  Object.entries(board).forEach(([key,cell])=>{
+    if(cell.fixed)return;const[r,c]=key.split("_").map(Number);
+    (cell.segs||[]).forEach((seg,idx)=>{const id=`${key}#${idx}`,node={id,ends:[{r,c,dir:seg.a,col:seg.ca},{r,c,dir:seg.b,col:seg.cb}],adj:[]};nodes.push(node);nodeMap.set(id,node);});
   });
-
-  if (nodes.length === 0) return false;
-
-  for (const n of nodes) {
-    for (const end of n.ends) {
-      const [dr, dc] = DELTA[end.dir];
-      const nr = end.r + dr, nc = end.c + dc;
-      const nbKey = `${nr}_${nc}`;
-      const nbCell = board[nbKey];
-      if (!nbCell) return false;
-
-      let matchedId = null;
-      if (nbCell.fixed) {
-        theme.paths.forEach((p, idx) => {
-          const oppTarget = `${nbKey}:${OPP[end.dir]}`;
-          if ((p.p1 === oppTarget && p.c1 === end.col) || (p.p2 === oppTarget && p.c2 === end.col)) {
-            matchedId = `THEME#${idx}`;
-          }
-        });
-      } else {
-        (nbCell.segs || []).forEach((s2, idx2) => {
-          const c2 = portColor(s2, OPP[end.dir]);
-          if (c2 !== null && c2 === end.col) matchedId = `${nbKey}#${idx2}`;
-        });
-      }
-      if (!matchedId) return false;
+  if(!nodes.length)return false;
+  for(const n of nodes){
+    for(const end of n.ends){
+      const[dr,dc]=DELTA[end.dir],nbKey=`${end.r+dr}_${end.c+dc}`,nbCell=board[nbKey];
+      if(!nbCell)return false;
+      let matchedId=null;
+      if(nbCell.fixed){theme.paths.forEach((p,idx)=>{const opp=`${nbKey}:${OPP[end.dir]}`;if((p.p1===opp&&p.c1===end.col)||(p.p2===opp&&p.c2===end.col))matchedId=`THEME#${idx}`;});}
+      else{(nbCell.segs||[]).forEach((s2,idx2)=>{const c2=portColor(s2,OPP[end.dir]);if(c2!==null&&c2===end.col)matchedId=`${nbKey}#${idx2}`;});}
+      if(!matchedId)return false;
       n.adj.push(matchedId);
     }
   }
-
-  const visited = new Set([nodes[0].id]);
-  const q = [nodes[0].id];
-  while (q.length) {
-    const cur = nodeMap.get(q.shift());
-    for (const nxt of cur.adj) {
-      if (!visited.has(nxt)) {
-        visited.add(nxt);
-        q.push(nxt);
-      }
-    }
-  }
-  return visited.size === nodes.length;
+  const visited=new Set([nodes[0].id]),q=[nodes[0].id];
+  while(q.length){const cur=nodeMap.get(q.shift());for(const nxt of cur.adj)if(!visited.has(nxt)){visited.add(nxt);q.push(nxt);}}
+  return visited.size===nodes.length;
 }
 
-const PT = { N: [50, 0], E: [100, 50], S: [50, 100], W: [0, 50] };
-const LBL_PT = { N: [50, 15], E: [83, 53], S: [50, 91], W: [17, 53] };
-
-function pathD(a, b) {
-  const [x1, y1] = PT[a], [x2, y2] = PT[b];
-  if (OPP[a] === b) return `M ${x1} ${y1} L ${x2} ${y2}`;
-  return `M ${x1} ${y1} Q 50 50 ${x2} ${y2}`;
+const PT={N:[50,0],E:[100,50],S:[50,100],W:[0,50]},LBL_PT={N:[50,15],E:[83,53],S:[50,91],W:[17,53]};
+const pathD=(a,b)=>OPP[a]===b?`M ${PT[a][0]} ${PT[a][1]} L ${PT[b][0]} ${PT[b][1]}`:`M ${PT[a][0]} ${PT[a][1]} Q 50 50 ${PT[b][0]} ${PT[b][1]}`;
+function renderGradientRope(d,x1,y1,x2,y2,c1,c2,gid,isSkel=false){
+  const sA=c1===0?"rgba(255,255,255,0.55)":COLOR_INFO[c1].hex,sB=c2===0?"rgba(255,255,255,0.55)":COLOR_INFO[c2].hex,oc=isSkel?"rgba(255,255,255,0.22)":"#020617";
+  return `<defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><stop offset="0%" stop-color="${sA}"/><stop offset="42%" stop-color="${sA}"/><stop offset="58%" stop-color="${sB}"/><stop offset="100%" stop-color="${sB}"/></linearGradient></defs><path d="${d}" fill="none" stroke="${oc}" stroke-width="20"/><path d="${d}" fill="none" stroke="url(#${gid})" stroke-width="14" ${isSkel?'stroke-opacity="0.88"':""}/><path d="${d}" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="14" stroke-dasharray="3 4"/>`;
 }
-
-function renderGradientRope(d, x1, y1, x2, y2, c1, c2, gid, isSkelPreview = false) {
-  const colA = COLOR_INFO[c1];
-  const colB = COLOR_INFO[c2];
-  const strokeA = c1 === 0 ? "rgba(255,255,255,0.55)" : colA.hex;
-  const strokeB = c2 === 0 ? "rgba(255,255,255,0.55)" : colB.hex;
-  const outlineColor = isSkelPreview ? "rgba(255,255,255,0.22)" : "#020617";
-  return `
-    <defs>
-      <linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">
-        <stop offset="0%" stop-color="${strokeA}"/><stop offset="42%" stop-color="${strokeA}"/>
-        <stop offset="58%" stop-color="${strokeB}"/><stop offset="100%" stop-color="${strokeB}"/>
-      </linearGradient>
-    </defs>
-    <path d="${d}" fill="none" stroke="${outlineColor}" stroke-width="20" stroke-linecap="butt"/>
-    <path d="${d}" fill="none" stroke="url(#${gid})" stroke-width="14" stroke-linecap="butt" ${isSkelPreview ? 'stroke-opacity="0.88"' : ""}/>
-    <path d="${d}" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="14" stroke-dasharray="3 4"/>`;
+function renderColorBadgeAt(lx,ly,v,isSkel=false){
+  const info=COLOR_INFO[v];
+  if(!info.short)return(isSkel&&v===0)?`<g><rect x="${lx-11}" y="${ly-8}" width="22" height="15" rx="4" fill="rgba(255,255,255,0.25)" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2"/><text x="${lx}" y="${ly+3}" text-anchor="middle" font-size="9" font-weight="800" fill="#f8fafc">透</text></g>`:"";
+  const fg=(info.name==="黄"||info.name==="青"||info.name==="オレンジ")?"#0f172a":"#ffffff";
+  return `<g><rect x="${lx-11}" y="${ly-8}" width="22" height="15" rx="4" fill="${info.hex}" stroke="#0f172a" stroke-width="1.5"/><text x="${lx}" y="${ly+3}" text-anchor="middle" font-size="10" font-weight="900" fill="${fg}">${info.short}</text></g>`;
 }
-
-function renderColorBadgeAt(lx, ly, colVal, isSkelPreview = false) {
-  const info = COLOR_INFO[colVal];
-  if (!info.short) {
-    if (isSkelPreview && colVal === 0) {
-      return `<g>
-        <rect x="${lx - 11}" y="${ly - 8}" width="22" height="15" rx="4" fill="rgba(255,255,255,0.25)" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2"/>
-        <text x="${lx}" y="${ly + 3}" text-anchor="middle" font-size="9" font-weight="800" fill="#f8fafc">透</text>
-      </g>`;
-    }
-    return "";
-  }
-  const fg = (info.name === "黄" || info.name === "青" || info.name === "オレンジ") ? "#0f172a" : "#ffffff";
-  return `<g>
-    <rect x="${lx - 11}" y="${ly - 8}" width="22" height="15" rx="4" fill="${info.hex}" stroke="#0f172a" stroke-width="1.5"/>
-    <text x="${lx}" y="${ly + 3}" text-anchor="middle" font-size="10" font-weight="900" fill="${fg}">${info.short}</text>
-  </g>`;
-}
-
-function renderCellSvg(segs, cardType = "line") {
-  let inner = "";
-  const isSkel = cardType !== "line";
-  if (cardType === "cross") {
-    inner += `<path d="M 0 50 L 100 50" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="14"/>
-      <path d="M 0 50 L 100 50" fill="none" stroke="rgba(15,23,42,0.35)" stroke-width="14" stroke-dasharray="4 4"/>`;
-  }
-  (segs || []).forEach((s, i) => {
-    const gid = `g_${Math.random().toString(36).slice(2, 8)}_${i}`;
-    const [x1, y1] = PT[s.a], [x2, y2] = PT[s.b];
-    const [lx1, ly1] = LBL_PT[s.a], [lx2, ly2] = LBL_PT[s.b];
-    inner += renderGradientRope(pathD(s.a, s.b), x1, y1, x2, y2, s.ca, s.cb, gid, isSkel);
-    inner += renderColorBadgeAt(lx1, ly1, s.ca, isSkel);
-    inner += renderColorBadgeAt(lx2, ly2, s.cb, isSkel);
-  });
+function renderCellSvg(segs,cardType="line"){
+  let inner=cardType==="cross"?`<path d="M 0 50 L 100 50" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="14"/><path d="M 0 50 L 100 50" fill="none" stroke="rgba(15,23,42,0.35)" stroke-width="14" stroke-dasharray="4 4"/>`:"";
+  const isSkel=cardType!=="line";
+  (segs||[]).forEach((s,i)=>{const gid=`g_${Math.random().toString(36).slice(2,8)}_${i}`;inner+=renderGradientRope(pathD(s.a,s.b),PT[s.a][0],PT[s.a][1],PT[s.b][0],PT[s.b][1],s.ca,s.cb,gid,isSkel)+renderColorBadgeAt(LBL_PT[s.a][0],LBL_PT[s.a][1],s.ca,isSkel)+renderColorBadgeAt(LBL_PT[s.b][0],LBL_PT[s.b][1],s.cb,isSkel);});
   return `<svg viewBox="0 0 100 100" width="100%" height="100%" style="display:block;">${inner}</svg>`;
 }
-
-function renderThemeHalfSvg(themeId, side) {
-  const theme = THEMES.find((t) => t.id === themeId) || THEMES[0];
-  let inner = "";
-  theme.paths.forEach((p, idx) => {
-    const [x1, y1] = T_PT[p.p1];
-    const [x2, y2] = T_PT[p.p2];
-    const gid = `tg_${themeId}_${side}_${idx}_${Math.random().toString(36).slice(2, 6)}`;
-    inner += renderGradientRope(p.d, x1, y1, x2, y2, p.c1, p.c2, gid, false);
-  });
-  theme.paths.forEach((p) => {
-    const [lx1, ly1] = T_LBL[p.p1];
-    const [lx2, ly2] = T_LBL[p.p2];
-    inner += renderColorBadgeAt(lx1, ly1, p.c1, false);
-    inner += renderColorBadgeAt(lx2, ly2, p.c2, false);
-  });
-  const vb = side === "left" ? "0 0 100 100" : "100 0 100 100";
-  return `<svg viewBox="${vb}" width="100%" height="100%" style="display:block;">${inner}</svg>`;
+function renderThemeHalfSvg(themeId,side){
+  const theme=THEMES.find(t=>t.id===themeId)||THEMES[0];let inner="";
+  theme.paths.forEach((p,idx)=>{inner+=renderGradientRope(p.d,T_PT[p.p1][0],T_PT[p.p1][1],T_PT[p.p2][0],T_PT[p.p2][1],p.c1,p.c2,`tg_${themeId}_${side}_${idx}_${Math.random().toString(36).slice(2,6)}`,false);});
+  theme.paths.forEach(p=>{inner+=renderColorBadgeAt(T_LBL[p.p1][0],T_LBL[p.p1][1],p.c1,false)+renderColorBadgeAt(T_LBL[p.p2][0],T_LBL[p.p2][1],p.c2,false);});
+  return `<svg viewBox="${side==="left"?"0 0 100 100":"100 0 100 100"}" width="100%" height="100%" style="display:block;">${inner}</svg>`;
 }
 
-const UID_KEY = "hitosujinawa_uid_v1";
-let myUid = localStorage.getItem(UID_KEY);
-if (!myUid) {
-  myUid = "u_" + Math.random().toString(36).slice(2, 10);
-  localStorage.setItem(UID_KEY, myUid);
+const UID_KEY="hitosujinawa_uid_v1";
+let myUid=localStorage.getItem(UID_KEY);
+if(!myUid){myUid="u_"+Math.random().toString(36).slice(2,10);localStorage.setItem(UID_KEY,myUid);}
+
+let roomId=null,roomData=null,roomRef=null,selectedHandIds=[],rotSteps=0,skelFlip180=false,pendingPos=null,hintKey=null,cellSize=56,lastNotifiedTurnKey=null,lastSeenReactionId=null,stampCooldown=false,titleTimer=null,repIdx=0,repTimer=null;
+const $=id=>document.getElementById(id);
+const showScreen=n=>{document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(`scr-${n}`).classList.add("active");};
+function showErr(id,msg){const el=$(id);el.textContent=msg;el.classList.remove("hidden");setTimeout(()=>el.classList.add("hidden"),4500);}
+function playTone(f1,f2){try{const ctx=new(window.AudioContext||window.webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.setValueAtTime(f1,ctx.currentTime);if(f2)o.frequency.setValueAtTime(f2,ctx.currentTime+0.1);g.gain.setValueAtTime(0.1,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+0.31);}catch{}}
+const playChime=()=>playTone(660,880),playPop=()=>playTone(520,740);
+
+(function initStamps(){const g=$("stamp-grid");g.innerHTML="";STAMPS.forEach(t=>{const b=document.createElement("button");b.className="stamp-btn";b.textContent=t;b.onclick=()=>sendStamp(t);g.appendChild(b);});})();
+
+async function sendStamp(stamp){
+  if(!roomId||!roomData||stampCooldown)return;
+  stampCooldown=true;document.querySelectorAll(".stamp-btn").forEach(b=>b.disabled=true);
+  setTimeout(()=>{stampCooldown=false;document.querySelectorAll(".stamp-btn").forEach(b=>b.disabled=false);},800);
+  const item={id:`r_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,uid:myUid,name:roomData.players?.[myUid]?.name||getPlayerName(),stamp,at:Date.now()};
+  await update(ref(db,`rooms/${roomId}`),{reactions:[...(roomData.reactions||[]),item].slice(-6)});
+}
+function showStampToast(item){const w=$("stamp-toast-wrap"),d=document.createElement("div");d.className="stamp-toast";d.innerHTML=`<small>${esc(item.name)}</small>${esc(item.stamp)}`;w.appendChild(d);setTimeout(()=>d.remove(),2800);}
+function renderReactions(){
+  const list=roomData?.reactions||[],feed=$("reaction-feed");
+  if(!list.length){feed.innerHTML='<span class="muted" style="font-size:0.75rem;">まだリアクションはありません</span>';return;}
+  const latest=list[list.length-1];
+  if(latest&&latest.id!==lastSeenReactionId){if(lastSeenReactionId!==null){playPop();showStampToast(latest);}lastSeenReactionId=latest.id;}
+  feed.innerHTML="";
+  [...list].reverse().forEach(it=>{const d=document.createElement("div");d.className="reaction-item";d.innerHTML=`<strong>${esc(it.name)}:</strong><span>${esc(it.stamp)}</span>`;feed.appendChild(d);});
 }
 
-let roomId = null;
-let roomData = null;
-let roomRef = null;
-let selectedHandIds = [];
-let rotSteps = 0;
-let skelFlip180 = false;
-let pendingPos = null;
-let hintKey = null;
-let cellSize = 56; // カメラを少し引いた初期サイズ
-let lastNotifiedTurnKey = null;
-let lastSeenReactionId = null;
-let stampCooldown = false;
-let titleTimer = null;
-let repIdx = 0;
-let repTimer = null;
-
-const $ = (id) => document.getElementById(id);
-const showScreen = (name) => {
-  document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
-  $(`scr-${name}`).classList.add("active");
-};
-
-function showErr(elId, msg) {
-  const el = $(elId);
-  el.textContent = msg;
-  el.classList.remove("hidden");
-  setTimeout(() => el.classList.add("hidden"), 4500);
-}
-
-function playTone(freq1, freq2) {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = "sine"; osc.frequency.setValueAtTime(freq1, ctx.currentTime);
-    if (freq2) osc.frequency.setValueAtTime(freq2, ctx.currentTime + 0.1);
-    g.gain.setValueAtTime(0.1, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.connect(g); g.connect(ctx.destination);
-    osc.start(); osc.stop(ctx.currentTime + 0.31);
-  } catch {}
-}
-
-function playChime() { playTone(660, 880); }
-function playPop() { playTone(520, 740); }
-
-function initStampButtons() {
-  const grid = $("stamp-grid");
-  grid.innerHTML = "";
-  STAMPS.forEach((text) => {
-    const btn = document.createElement("button");
-    btn.className = "stamp-btn";
-    btn.textContent = text;
-    btn.onclick = () => sendStamp(text);
-    grid.appendChild(btn);
-  });
-}
-initStampButtons();
-
-async function sendStamp(stamp) {
-  if (!roomId || !roomData || stampCooldown) return;
-  stampCooldown = true;
-  document.querySelectorAll(".stamp-btn").forEach((b) => (b.disabled = true));
-  setTimeout(() => {
-    stampCooldown = false;
-    document.querySelectorAll(".stamp-btn").forEach((b) => (b.disabled = false));
-  }, 800);
-
-  const myName = roomData.players?.[myUid]?.name || getPlayerName();
-  const item = {
-    id: `r_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-    uid: myUid, name: myName, stamp, at: Date.now()
-  };
-  const nextList = [...(roomData.reactions || []), item].slice(-6);
-  await update(ref(db, `rooms/${roomId}`), { reactions: nextList });
-}
-
-function showStampToast(item) {
-  const wrap = $("stamp-toast-wrap");
-  const div = document.createElement("div");
-  div.className = "stamp-toast";
-  div.innerHTML = `<small>${esc(item.name)}</small>${esc(item.stamp)}`;
-  wrap.appendChild(div);
-  setTimeout(() => div.remove(), 2800);
-}
-
-function renderReactions() {
-  const list = roomData?.reactions || [];
-  const feed = $("reaction-feed");
-  if (!list.length) {
-    feed.innerHTML = '<span class="muted" style="font-size:0.75rem;">まだリアクションはありません</span>';
-    return;
-  }
-  const latest = list[list.length - 1];
-  if (latest && latest.id !== lastSeenReactionId) {
-    if (lastSeenReactionId !== null) {
-      playPop();
-      showStampToast(latest);
-    }
-    lastSeenReactionId = latest.id;
-  }
-
-  feed.innerHTML = "";
-  [...list].reverse().forEach((item) => {
-    const div = document.createElement("div");
-    div.className = "reaction-item";
-    div.innerHTML = `<strong>${esc(item.name)}:</strong><span>${esc(item.stamp)}</span>`;
-    feed.appendChild(div);
-  });
-}
-
-function updateNotifyBtn() {
-  if (!("Notification" in window)) {
-    $("btn-notify").classList.add("hidden");
-    return;
-  }
-  $("btn-notify").textContent = Notification.permission === "granted" ? "🔔 通知ON" : "🔔 通知OFF";
-}
+function updateNotifyBtn(){if(!("Notification"in window)){$("btn-notify").classList.add("hidden");return;}$("btn-notify").textContent=Notification.permission==="granted"?"🔔 通知ON":"🔔 通知OFF";}
 updateNotifyBtn();
+$("btn-notify").onclick=async()=>{if("Notification"in window){await Notification.requestPermission();updateNotifyBtn();}};
+function notifyMyTurn(){playChime();if(document.hidden){if(!titleTimer){let f=false;titleTimer=setInterval(()=>{document.title=f?"【あなたの手番です！】ヒトスジナワ":"➰ ヒトスジナワ オンライン";f=!f;},900);}if("Notification"in window&&Notification.permission==="granted")new Notification("ヒトスジナワ オンライン",{body:"あなたの手番になりました！"});}}
+function clearTabFlash(){if(titleTimer){clearInterval(titleTimer);titleTimer=null;}document.title="ヒトスジナワ オンライン";}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){clearTabFlash();if(roomData)renderAll();}});
+window.addEventListener("focus",()=>{clearTabFlash();if(roomData)renderAll();});
 
-$("btn-notify").onclick = async () => {
-  if ("Notification" in window) {
-    await Notification.requestPermission();
-    updateNotifyBtn();
-  }
-};
+async function generate4DigitId(){for(let i=0;i<20;i++){const id=String(Math.floor(Math.random()*10000)).padStart(4,"0"),s=await get(ref(db,`rooms/${id}`));if(!s.exists())return id;}throw new Error("空きIDが見つかりませんでした。");}
+const getPlayerName=()=>$("inp-name").value.trim()||"プレイヤー";
 
-function notifyMyTurn() {
-  playChime();
-  if (document.hidden) {
-    if (!titleTimer) {
-      let f = false;
-      titleTimer = setInterval(() => {
-        document.title = f ? "【あなたの手番です！】ヒトスジナワ" : "➰ ヒトスジナワ オンライン";
-        f = !f;
-      }, 900);
-    }
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification("ヒトスジナワ オンライン", { body: "あなたの手番になりました！" });
-    }
-  }
-}
-
-function clearTabFlash() {
-  if (titleTimer) { clearInterval(titleTimer); titleTimer = null; }
-  document.title = "ヒトスジナワ オンライン";
-}
-
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) { clearTabFlash(); if (roomData) renderAll(); }
-});
-window.addEventListener("focus", () => {
-  clearTabFlash(); if (roomData) renderAll();
-});
-
-async function generate4DigitId() {
-  for (let i = 0; i < 20; i++) {
-    const id = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-    const snap = await get(ref(db, `rooms/${id}`));
-    if (!snap.exists()) return id;
-  }
-  throw new Error("空きIDが見つかりませんでした。");
-}
-
-function getPlayerName() { return $("inp-name").value.trim() || "プレイヤー"; }
-
-$("btn-create").onclick = async () => {
-  try {
-    const name = getPlayerName();
-    const id = await generate4DigitId();
-    const initialRoom = {
-      id, hostUid: myUid, status: "lobby", createdAt: Date.now(),
-      players: { [myUid]: { uid: myUid, name, online: true, order: 0, hand: [] } }
-    };
-    await set(ref(db, `rooms/${id}`), initialRoom);
-    subscribeRoom(id);
-  } catch (e) {
-    showErr("home-err", "部屋の作成に失敗しました: " + e.message);
-  }
-};
-
-$("btn-join").onclick = async () => {
-  try {
-    const id = $("inp-room").value.trim();
-    if (!/^\d{4}$/.test(id)) return showErr("home-err", "招待IDは数字4ケタで入力してください。");
-    const snap = await get(ref(db, `rooms/${id}`));
-    if (!snap.exists()) return showErr("home-err", "その招待IDの部屋が見つかりません。");
-
-    const data = snap.val();
-    const players = data.players || {};
-
-    if (players[myUid]) {
-      await update(ref(db, `rooms/${id}/players/${myUid}`), { online: true, name: getPlayerName() });
-      subscribeRoom(id);
-      return;
-    }
-    if (data.status === "lobby") {
-      const count = Object.keys(players).length;
-      if (count >= 8) return showErr("home-err", "この部屋は満員（8人）です。");
-      await set(ref(db, `rooms/${id}/players/${myUid}`), {
-        uid: myUid, name: getPlayerName(), online: true, order: count, hand: []
-      });
-      subscribeRoom(id);
-    } else {
-      const offList = Object.values(players).filter((p) => !p.online);
-      if (!offList.length) return showErr("home-err", "このゲームはすでに開始されています（離脱中の枠はありません）。");
-      $("reclaim-list").innerHTML = "";
-      offList.forEach((p) => {
-        const b = document.createElement("button");
-        b.className = "btn btn-primary btn-block";
-        b.textContent = `「${p.name}」として復帰する（手札 ${(p.hand || []).length}枚）`;
-        b.onclick = async () => {
-          myUid = p.uid;
-          localStorage.setItem(UID_KEY, myUid);
-          await update(ref(db, `rooms/${id}/players/${myUid}`), { online: true });
-          $("mod-reclaim").classList.add("hidden");
-          subscribeRoom(id);
-        };
-        $("reclaim-list").appendChild(b);
-      });
+$("btn-create").onclick=async()=>{try{const id=await generate4DigitId();await set(ref(db,`rooms/${id}`),{id,hostUid:myUid,status:"lobby",createdAt:Date.now(),players:{[myUid]:{uid:myUid,name:getPlayerName(),online:true,order:0,hand:[]}}});subscribeRoom(id);}catch(e){showErr("home-err","部屋の作成に失敗しました: "+e.message);}};
+$("btn-join").onclick=async()=>{
+  try{
+    const id=$("inp-room").value.trim();if(!/^\d{4}$/.test(id))return showErr("home-err","招待IDは数字4ケタで入力してください。");
+    const snap=await get(ref(db,`rooms/${id}`));if(!snap.exists())return showErr("home-err","その招待IDの部屋が見つかりません。");
+    const data=snap.val(),players=data.players||{};
+    if(players[myUid]){await update(ref(db,`rooms/${id}/players/${myUid}`),{online:true,name:getPlayerName()});subscribeRoom(id);return;}
+    if(data.status==="lobby"){const c=Object.keys(players).length;if(c>=8)return showErr("home-err","この部屋は満員（8人）です。");await set(ref(db,`rooms/${id}/players/${myUid}`),{uid:myUid,name:getPlayerName(),online:true,order:c,hand:[]});subscribeRoom(id);}
+    else{
+      const offList=Object.values(players).filter(p=>!p.online);if(!offList.length)return showErr("home-err","このゲームはすでに開始されています（離脱中の枠はありません）。");
+      $("reclaim-list").innerHTML="";
+      offList.forEach(p=>{const b=document.createElement("button");b.className="btn btn-primary btn-block";b.textContent=`「${p.name}」として復帰する（手札 ${(p.hand||[]).length}枚）`;b.onclick=async()=>{myUid=p.uid;localStorage.setItem(UID_KEY,myUid);await update(ref(db,`rooms/${id}/players/${myUid}`),{online:true});$("mod-reclaim").classList.add("hidden");subscribeRoom(id);};$("reclaim-list").appendChild(b);});
       $("mod-reclaim").classList.remove("hidden");
     }
-  } catch (e) {
-    showErr("home-err", "参加に失敗しました: " + e.message);
-  }
+  }catch(e){showErr("home-err","参加に失敗しました: "+e.message);}
 };
-$("btn-reclaim-close").onclick = () => $("mod-reclaim").classList.add("hidden");
+$("btn-reclaim-close").onclick=()=>$("mod-reclaim").classList.add("hidden");
 
-function subscribeRoom(id) {
-  if (roomRef) off(roomRef);
-  roomId = id;
-  lastSeenReactionId = null;
-  roomRef = ref(db, `rooms/${id}`);
-  const pOnlineRef = ref(db, `rooms/${id}/players/${myUid}/online`);
-  set(pOnlineRef, true);
-  onDisconnect(pOnlineRef).set(false);
-
-  onValue(roomRef, (snap) => {
-    if (!snap.exists()) { alert("ルームが閉じられました。"); location.reload(); return; }
-    const firstLoad = roomData === null;
-    roomData = snap.val();
-    if (firstLoad) {
-      const rList = roomData.reactions || [];
-      lastSeenReactionId = rList.length ? rList[rList.length - 1].id : "";
-    }
-    renderAll();
-  });
+function subscribeRoom(id){
+  if(roomRef)off(roomRef);roomId=id;lastSeenReactionId=null;roomRef=ref(db,`rooms/${id}`);
+  const pRef=ref(db,`rooms/${id}/players/${myUid}/online`);set(pRef,true);onDisconnect(pRef).set(false);
+  onValue(roomRef,snap=>{if(!snap.exists()){alert("ルームが閉じられました。");location.reload();return;}const fl=roomData===null;roomData=snap.val();if(fl){const rl=roomData.reactions||[];lastSeenReactionId=rl.length?rl[rl.length-1].id:"";}renderAll();});
 }
 
-async function startGame() {
-  const players = Object.values(roomData.players || {});
-  if (!players.length) return;
-  const deck = createDeck();
-  const theme = THEMES[Math.floor(Math.random() * THEMES.length)];
-
-  const shuffled = [...players].sort(() => Math.random() - 0.5);
-  const nextPlayers = {};
-  shuffled.forEach((p, idx) => {
-    const hand = [];
-    for (let k = 0; k < 3 && deck.length; k++) hand.push(deck.pop());
-    nextPlayers[p.uid] = { ...p, order: idx, hand, lastDrawnId: null };
-  });
-
-  const board = buildThemeBoardCells(theme);
-
-  selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; hintKey = null;
-  lastSeenReactionId = "";
-  await update(ref(db, `rooms/${roomId}`), {
-    status: "playing", themeId: theme.id, themeName: theme.name, deck, board,
-    players: nextPlayers, turnOrder: shuffled.map((p) => p.uid),
-    turnIndex: 0, hasDrawn: false, passStreak: 0, lastKey: null, history: [], reactions: [], endedAt: null
-  });
+async function startGame(){
+  const players=Object.values(roomData.players||{});if(!players.length)return;
+  const deck=createDeck(),theme=THEMES[Math.floor(Math.random()*THEMES.length)],shuffled=[...players].sort(()=>Math.random()-0.5),nextPlayers={};
+  shuffled.forEach((p,idx)=>{const hand=[];for(let k=0;k<3&&deck.length;k++)hand.push(deck.pop());nextPlayers[p.uid]={...p,order:idx,hand,lastDrawnId:null};});
+  selectedHandIds=[];rotSteps=0;skelFlip180=false;pendingPos=null;hintKey=null;lastSeenReactionId="";
+  await update(ref(db,`rooms/${roomId}`),{status:"playing",themeId:theme.id,themeName:theme.name,deck,board:buildThemeBoardCells(theme),players:nextPlayers,turnOrder:shuffled.map(p=>p.uid),turnIndex:0,hasDrawn:false,passStreak:0,lastKey:null,history:[],reactions:[],endedAt:null});
 }
 
-$("btn-start").onclick = () => startGame();
-$("btn-reset").onclick = () => { if (confirm("ゲームを最初からリセットしますか？")) startGame(); };
-$("btn-clr-reset").onclick = () => startGame();
+$("btn-start").onclick=()=>startGame();
+$("btn-reset").onclick=()=>{if(confirm("ゲームを最初からリセットしますか？"))startGame();};
+$("btn-clr-reset").onclick=()=>startGame();
+$("btn-leave").onclick=async()=>{if(roomId)await update(ref(db,`rooms/${roomId}/players/${myUid}`),{online:false});if(roomRef)off(roomRef);roomId=null;roomData=null;showScreen("home");};
+$("btn-copy").onclick=()=>{navigator.clipboard?.writeText(roomId);$("btn-copy").textContent="コピー済!";setTimeout(()=>($("btn-copy").textContent="IDをコピー"),1500);};
 
-$("btn-leave").onclick = async () => {
-  if (roomId) await update(ref(db, `rooms/${roomId}/players/${myUid}`), { online: false });
-  if (roomRef) off(roomRef);
-  roomId = null; roomData = null;
-  showScreen("home");
-};
-
-$("btn-copy").onclick = () => {
-  navigator.clipboard?.writeText(roomId);
-  $("btn-copy").textContent = "コピー済!";
-  setTimeout(() => ($("btn-copy").textContent = "IDをコピー"), 1500);
-};
-
-function renderAll() {
-  if (!roomData) return;
-  renderReactions();
-  const st = roomData.status;
-  if (st === "lobby") { showScreen("lobby"); renderLobby(); }
-  else if (st === "playing") {
-    if ($("scr-replay").classList.contains("active")) return;
-    showScreen("game");
-    renderGame();
-  } else if (st === "cleared" || st === "gameover") {
-    if (!$("scr-replay").classList.contains("active")) showScreen("clear");
-    renderResult();
-  }
+function renderAll(){
+  if(!roomData)return;renderReactions();const st=roomData.status;
+  if(st==="lobby"){showScreen("lobby");renderLobby();}
+  else if(st==="playing"){if($("scr-replay").classList.contains("active"))return;showScreen("game");renderGame();}
+  else if(st==="cleared"||st==="gameover"){if(!$("scr-replay").classList.contains("active"))showScreen("clear");renderResult();}
 }
 
-function renderLobby() {
-  $("lob-id").textContent = roomData.id;
-  const list = Object.values(roomData.players || {}).sort((a, b) => a.order - b.order);
-  $("lob-cnt").textContent = list.length;
-  $("lob-list").innerHTML = "";
-  list.forEach((p) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${esc(p.name)} ${p.uid === roomData.hostUid ? "👑" : ""}</span>
-      <span class="muted">${p.online ? "●" : "離脱"}</span>`;
-    $("lob-list").appendChild(li);
-  });
-  const isHost = roomData.hostUid === myUid;
-  $("lob-host-box").classList.toggle("hidden", !isHost);
-  $("lob-wait").classList.toggle("hidden", isHost);
+function renderLobby(){
+  $("lob-id").textContent=roomData.id;
+  const list=Object.values(roomData.players||{}).sort((a,b)=>a.order-b.order);
+  $("lob-cnt").textContent=list.length;$("lob-list").innerHTML="";
+  list.forEach(p=>{const li=document.createElement("li");li.innerHTML=`<span>${esc(p.name)} ${p.uid===roomData.hostUid?"👑":""}</span><span class="muted">${p.online?"●":"離脱"}</span>`;$("lob-list").appendChild(li);});
+  const isHost=roomData.hostUid===myUid;$("lob-host-box").classList.toggle("hidden",!isHost);$("lob-wait").classList.toggle("hidden",isHost);
 }
 
-function renderBoardInto(containerEl, board, interactive = false, lastKey = null, pendOverlay = null, hlKey = null) {
-  const keys = Object.keys(board || {});
-  let minR = 0, maxR = 0, minC = 0, maxC = 1;
-  keys.forEach((k) => {
-    const [r, c] = k.split("_").map(Number);
-    if (r < minR) minR = r; if (r > maxR) maxR = r;
-    if (c < minC) minC = c; if (c > maxC) maxC = c;
-  });
-  minR -= 1; maxR += 1; minC -= 1; maxC += 1;
-  while (maxR - minR + 1 < 5) { minR--; maxR++; }
-  while (maxC - minC + 1 < 7) { minC--; maxC++; }
-
-  const cols = maxC - minC + 1;
-  containerEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size, ${cellSize}px))`;
-  containerEl.style.setProperty("--cell-size", `${cellSize}px`);
-  containerEl.innerHTML = "";
-
-  for (let r = minR; r <= maxR; r++) {
-    for (let c = minC; c <= maxC; c++) {
-      const key = `${r}_${c}`;
-      const isPend = pendOverlay && pendOverlay.key === key && pendOverlay.cell;
-      const cell = isPend ? pendOverlay.cell : board[key];
-      const div = document.createElement("div");
-      let cls = "cell";
-      if (cell) cls += " has-card";
-      if (board[key]?.fixed) cls += " fixed";
-      if (isPend) {
-        if (pendOverlay.isTry) cls += " pending-try";
-        else cls += pendOverlay.ok ? " pending-ok" : " pending-ng";
-      } else if (key === hlKey) {
-        cls += " hint-cell";
-      } else if (key === lastKey) {
-        cls += " last";
-      }
-      if (!interactive) cls += " readonly";
-      div.className = cls;
-
-      if (cell) {
-        if (cell.fixed) {
-          const tid = cell.themeId || roomData?.themeId || 1;
-          const side = cell.side || (key === "0_0" ? "left" : "right");
-          div.innerHTML = renderThemeHalfSvg(tid, side);
-          if (side === "left") {
-            const t = document.createElement("span");
-            t.className = "cell-theme-lbl"; t.textContent = `No.${tid}`;
-            div.appendChild(t);
-          }
-        } else {
-          div.innerHTML = renderCellSvg(cell.segs, "line");
-          if (cell.hasHeavy) {
-            const tag = document.createElement("span");
-            tag.className = "cell-tag"; tag.textContent = "重";
-            div.appendChild(tag);
-          }
+function renderBoardInto(el,board,interactive=false,lastKey=null,pendOverlay=null,hlKey=null){
+  const keys=Object.keys(board||{});let minR=0,maxR=0,minC=0,maxC=1;
+  keys.forEach(k=>{const[r,c]=k.split("_").map(Number);if(r<minR)minR=r;if(r>maxR)maxR=r;if(c<minC)minC=c;if(c>maxC)maxC=c;});
+  minR--;maxR++;minC--;maxC++;while(maxR-minR+1<5){minR--;maxR++;}while(maxC-minC+1<7){minC--;maxC++;}
+  el.style.gridTemplateColumns=`repeat(${maxC-minC+1},var(--cell-size,${cellSize}px))`;el.style.setProperty("--cell-size",`${cellSize}px`);el.innerHTML="";
+  for(let r=minR;r<=maxR;r++){
+    for(let c=minC;c<=maxC;c++){
+      const key=`${r}_${c}`,isPend=pendOverlay&&pendOverlay.key===key&&pendOverlay.cell,cell=isPend?pendOverlay.cell:board[key],div=document.createElement("div");
+      let cls="cell";if(cell)cls+=" has-card";if(board[key]?.fixed)cls+=" fixed";
+      if(isPend)cls+=pendOverlay.isTry?" pending-try":(pendOverlay.ok?" pending-ok":" pending-ng");
+      else if(key===hlKey)cls+=" hint-cell";else if(key===lastKey)cls+=" last";
+      if(!interactive)cls+=" readonly";div.className=cls;
+      if(cell){
+        if(cell.fixed){
+          const tid=cell.themeId||roomData?.themeId||1,side=cell.side||(key==="0_0"?"left":"right");
+          div.innerHTML=renderThemeHalfSvg(tid,side);
+          if(side==="left"){const t=document.createElement("span");t.className="cell-theme-lbl";t.textContent=`No.${tid}`;div.appendChild(t);}
+        }else{
+          div.innerHTML=renderCellSvg(cell.segs,"line");
+          if(cell.hasHeavy){const tag=document.createElement("span");tag.className="cell-tag";tag.textContent="重";div.appendChild(tag);}
         }
       }
-      if (interactive) div.onclick = () => onCellTap(r, c);
-      containerEl.appendChild(div);
+      if(interactive)div.onclick=()=>onCellTap(r,c);
+      el.appendChild(div);
     }
   }
 }
 
-function renderPreviewBox(hand, readyToPlay) {
-  const box = $("preview-box");
-  const selected = hand.filter((c) => selectedHandIds.includes(c.id));
-  if (selected.length === 0) {
-    box.classList.add("hidden");
-    return;
-  }
+function renderPreviewBox(hand,readyToPlay){
+  const box=$("preview-box"),selected=hand.filter(c=>selectedHandIds.includes(c.id));
+  if(!selected.length){box.classList.add("hidden");return;}
   box.classList.remove("hidden");
-  const showFlipBtn = canFlipStraightSkel(selected);
-  const comp = composeSelection(selected, rotSteps, skelFlip180);
-  const tryBadge = !readyToPlay ? '<span style="color:#c084fc;font-weight:800;margin-left:6px;">[お試し中]</span>' : "";
-
-  if (selected.length === 1) {
-    const c0 = selected[0];
-    const seg = cardToSeg(c0, rotSteps);
-    const cA = COLOR_INFO[seg.ca]?.name || "透明";
-    const cB = COLOR_INFO[seg.cb]?.name || "透明";
-    let desc = "";
-    if (c0.type === "line") {
-      desc = canOverlayColorSkel(c0)
-        ? "単体配置OK／手札の通常スケルトンと2枚組にもできます"
-        : "単体配置OK（※混色を含むため通常スケルトンと組めません／直線なら後から交差可）";
-    } else if (c0.type === "cross") {
-      desc = "単体・2枚組では出せません。すでに盤面に置かれている「まっすぐなラインカード（2枚組直線も可）」をタップして重ねてください。";
-    } else {
-      desc = "単体でも場のカードの上にも置けません。手札の「青/ピンク/黄ライン」をもう1枚選んで2枚組で空きマスに出してください。";
-    }
-    box.innerHTML = `
-      <div class="preview-mini ${c0.type !== 'line' ? 'is-skel' : ''}">${renderCellSvg([seg], c0.type)}</div>
-      <div class="preview-info">
-        <div style="font-weight:800;">選択中（1枚）：${cA === cB ? cA : cA + ' ↔ ' + cB}${tryBadge}</div>
-        <div class="muted">${desc}</div>
-      </div>`;
-  } else {
-    const [c1, c2] = selected;
-    const r1 = (c1.type === "skel" && showFlipBtn && skelFlip180) ? (rotSteps + 2) % 4 : rotSteps;
-    const r2 = (c2.type === "skel" && showFlipBtn && skelFlip180) ? (rotSteps + 2) % 4 : (c2.type === "cross" ? (rotSteps + 1) % 4 : rotSteps);
-    const s1 = cardToSeg(c1, r1);
-    const s2 = cardToSeg(c2, r2);
-    let resHtml = "";
-    if (comp.ok) {
-      const lbls = comp.segs.map((s) => `${COLOR_INFO[s.ca].name}↔${COLOR_INFO[s.cb].name}`).join(" ＋ ");
-      resHtml = `
-        <div class="preview-result">${renderCellSvg(comp.segs, "line")}</div>
-        <div class="preview-info">
-          <div style="font-weight:800;color:#4ade80;">✅ 合成結果：${lbls}${tryBadge}</div>
-          <div class="muted">盤面の空きマスをタップして仮置き${readyToPlay ? "できます" : "を試せます"}（90°回転も反映されます）。</div>
-          ${showFlipBtn ? '<div style="margin-top:6px;"><button id="btn-prev-skel180" class="btn btn-sm btn-secondary">🔄 スケルトンだけ180°回転</button></div>' : ''}
-        </div>`;
-    } else {
-      resHtml = `
-        <div class="preview-info">
-          <div style="font-weight:800;color:#f87171;">⚠️ 重ねられません${tryBadge}</div>
-          <div class="muted">${comp.err}</div>
-        </div>`;
-    }
-    box.innerHTML = `
-      <div class="preview-cards">
-        <div class="preview-mini ${c1.type !== 'line' ? 'is-skel' : ''}">${renderCellSvg([s1], c1.type)}</div>
-        <span style="font-weight:900;">＋</span>
-        <div class="preview-mini ${c2.type !== 'line' ? 'is-skel' : ''}">${renderCellSvg([s2], c2.type)}</div>
-        <span style="font-weight:900;">＝</span>
-      </div>
-      ${resHtml}`;
-
-    const flipBtn = document.getElementById("btn-prev-skel180");
-    if (flipBtn) {
-      flipBtn.onclick = () => { skelFlip180 = !skelFlip180; renderGame(); };
-    }
+  const showFlipBtn=canFlipStraightSkel(selected),comp=composeSelection(selected,rotSteps,skelFlip180);
+  const tryBadge=!readyToPlay?'<span style="color:#c084fc;font-weight:800;margin-left:6px;">[お試し中]</span>':"";
+  if(selected.length===1){
+    const c0=selected[0],seg=cardToSeg(c0,rotSteps),cA=COLOR_INFO[seg.ca]?.name||"透明",cB=COLOR_INFO[seg.cb]?.name||"透明";
+    const desc=c0.type==="line"?(canOverlayColorSkel(c0)?"単体配置OK／手札の通常スケルトンと2枚組にもできます":"単体配置OK（※混色を含むため通常スケルトンと組めません／直線なら後から交差可）"):(c0.type==="cross"?"単体・2枚組では出せません。すでに盤面に置かれている「まっすぐなラインカード」をタップして重ねてください。":"単体でも場のカードの上にも置けません。手札の「青/ピンク/黄ライン」をもう1枚選んで2枚組で空きマスに出してください。");
+    box.innerHTML=`<div class="preview-mini ${c0.type!=='line'?'is-skel':''}">${renderCellSvg([seg],c0.type)}</div><div class="preview-info"><div style="font-weight:800;">選択中（1枚）：${cA===cB?cA:cA+' ↔ '+cB}${tryBadge}</div><div class="muted">${desc}</div></div>`;
+  }else{
+    const[c1,c2]=selected,r1=(c1.type==="skel"&&showFlipBtn&&skelFlip180)?(rotSteps+2)%4:rotSteps,r2=(c2.type==="skel"&&showFlipBtn&&skelFlip180)?(rotSteps+2)%4:(c2.type==="cross"?(rotSteps+1)%4:rotSteps);
+    let resHtml="";
+    if(comp.ok){
+      const lbls=comp.segs.map(s=>`${COLOR_INFO[s.ca].name}↔${COLOR_INFO[s.cb].name}`).join(" ＋ ");
+      resHtml=`<div class="preview-result">${renderCellSvg(comp.segs,"line")}</div><div class="preview-info"><div style="font-weight:800;color:#4ade80;">✅ 合成結果：${lbls}${tryBadge}</div><div class="muted">盤面の空きマスをタップして仮置き${readyToPlay?"できます":"を試せます"}（90°回転も反映されます）。</div>${showFlipBtn?'<div style="margin-top:6px;"><button id="btn-prev-skel180" class="btn btn-sm btn-secondary">🔄 スケルトンだけ180°回転</button></div>':''}</div>`;
+    }else{resHtml=`<div class="preview-info"><div style="font-weight:800;color:#f87171;">⚠️ 重ねられません${tryBadge}</div><div class="muted">${comp.err}</div></div>`;}
+    box.innerHTML=`<div class="preview-cards"><div class="preview-mini ${c1.type!=='line'?'is-skel':''}">${renderCellSvg([cardToSeg(c1,r1)],c1.type)}</div><span style="font-weight:900;">＋</span><div class="preview-mini ${c2.type!=='line'?'is-skel':''}">${renderCellSvg([cardToSeg(c2,r2)],c2.type)}</div><span style="font-weight:900;">＝</span></div>${resHtml}`;
+    const fb=$("btn-prev-skel180");if(fb)fb.onclick=()=>{skelFlip180=!skelFlip180;renderGame();};
   }
 }
 
-function renderGame() {
-  const isHost = roomData.hostUid === myUid;
-  const order = roomData.turnOrder || [];
-  const curUid = order[roomData.turnIndex % order.length];
-  const isMyTurn = curUid === myUid;
-  const players = roomData.players || {};
-  const deck = roomData.deck || [];
-  const myPlayer = players[myUid] || {};
-  const hand = myPlayer.hand || [];
-  const lastDrawnId = myPlayer.lastDrawnId || null;
-  const board = roomData.board || {};
-  const onlineCount = order.filter((uid) => players[uid]?.online).length;
-  const passStreak = roomData.passStreak || 0;
+function renderGame(){
+  const isHost=roomData.hostUid===myUid,order=roomData.turnOrder||[],curUid=order[roomData.turnIndex%order.length],isMyTurn=curUid===myUid;
+  const players=roomData.players||{},deck=roomData.deck||[],myP=players[myUid]||{},hand=myP.hand||[],board=roomData.board||{};
+  const onlineCount=order.filter(uid=>players[uid]?.online).length,passStreak=roomData.passStreak||0;
 
-  $("g-id").textContent = roomData.id;
-  $("g-sheet").textContent = `お題: ${roomData.themeName || "-"}`;
-  $("g-deck").textContent = deck.length;
+  $("g-id").textContent=roomData.id;$("g-sheet").textContent=`お題: ${roomData.themeName||"-"}`;$("g-deck").textContent=deck.length;
+  const ps=$("g-pass-streak");if(deck.length===0){ps.classList.remove("hidden");ps.textContent=`山札0・連続パス: ${passStreak}/${Math.max(1,onlineCount)}`;}else ps.classList.add("hidden");
+  $("g-host-box").classList.toggle("hidden",!isHost);
+  const curP=players[curUid];$("btn-skip-off").classList.toggle("hidden",!(isHost&&curP&&!curP.online));
 
-  const psBadge = $("g-pass-streak");
-  if (deck.length === 0) {
-    psBadge.classList.remove("hidden");
-    psBadge.textContent = `山札0・連続パス: ${passStreak}/${Math.max(1, onlineCount)}`;
-  } else {
-    psBadge.classList.add("hidden");
-  }
-  $("g-host-box").classList.toggle("hidden", !isHost);
+  $("g-players").innerHTML="";
+  order.forEach(uid=>{const p=players[uid];if(!p)return;const d=document.createElement("div");d.className="pill"+(uid===curUid?" active":"")+(!p.online?" off":"");d.textContent=`${uid===curUid?"▶ ":""}${p.name} (${(p.hand||[]).length}枚)${!p.online?" [離脱]":""}`;$("g-players").appendChild(d);});
 
-  const curPlayer = players[curUid];
-  $("btn-skip-off").classList.toggle("hidden", !(isHost && curPlayer && !curPlayer.online));
+  const tb=$("g-turn");
+  if(isMyTurn){
+    tb.className="turn-bar mine";tb.textContent=roomData.hasDrawn||deck.length===0?"あなたの手番です！カードを選んで盤面をタップしてください":"あなたの手番です！まず「山札から1枚引く」を押してください";
+    const tKey=`${(roomData.history||[]).length}_${roomData.turnIndex}_${roomData.hasDrawn}`;if(lastNotifiedTurnKey!==tKey){lastNotifiedTurnKey=tKey;notifyMyTurn();}
+  }else{tb.className="turn-bar";tb.textContent=`${curP?curP.name:"他のプレイヤー"} の手番です（手札のお試し操作ができます）`;hintKey=null;$("g-hint-banner").classList.add("hidden");}
 
-  $("g-players").innerHTML = "";
-  order.forEach((uid) => {
-    const p = players[uid];
-    if (!p) return;
-    const div = document.createElement("div");
-    div.className = "pill" + (uid === curUid ? " active" : "") + (!p.online ? " off" : "");
-    div.textContent = `${uid === curUid ? "▶ " : ""}${p.name} (${(p.hand || []).length}枚)${!p.online ? " [離脱]" : ""}`;
-    $("g-players").appendChild(div);
-  });
+  const readyToPlay=isMyTurn&&(roomData.hasDrawn||deck.length===0);
+  $("btn-draw").classList.toggle("hidden",!(isMyTurn&&!roomData.hasDrawn&&deck.length>0));
+  const requiredMove=readyToPlay?findFirstValidMove(board,hand,false):null,anyMove=readyToPlay?(requiredMove||findFirstValidMove(board,hand,true)):null;
+  $("btn-pass").disabled=!(readyToPlay&&!requiredMove);$("btn-hint").classList.toggle("hidden",!(readyToPlay&&anyMove));
 
-  const tb = $("g-turn");
-  if (isMyTurn) {
-    tb.className = "turn-bar mine";
-    tb.textContent = roomData.hasDrawn || deck.length === 0
-      ? "あなたの手番です！カードを選んで盤面をタップしてください"
-      : "あなたの手番です！まず「山札から1枚引く」を押してください";
-    const tKey = `${(roomData.history || []).length}_${roomData.turnIndex}_${roomData.hasDrawn}`;
-    if (lastNotifiedTurnKey !== tKey) {
-      lastNotifiedTurnKey = tKey;
-      notifyMyTurn();
-    }
-  } else {
-    tb.className = "turn-bar";
-    tb.textContent = `${curPlayer ? curPlayer.name : "他のプレイヤー"} の手番です（手札のお試し操作ができます）`;
-    hintKey = null;
-    $("g-hint-banner").classList.add("hidden");
-  }
+  if(readyToPlay)$("g-hint").textContent=requiredMove?"※ 出せるカードがあるためパスできません（見つからない時は「💡 置ける場所ヒント」を押してください）。":(anyMove?"✅ 交差スケルトンしか置けないため「パス」できます（盤面の直線に交差を置くことも可能です）。":"✅ 出せるカード（合法手）がないため「パス」できます。");
+  else $("g-hint").textContent="※ 他の人の手番中やドロー前も、手札を選んで組み合わせや盤面配置をお試しできます。";
 
-  const readyToPlay = isMyTurn && (roomData.hasDrawn || deck.length === 0);
-  $("btn-draw").classList.toggle("hidden", !(isMyTurn && !roomData.hasDrawn && deck.length > 0));
+  selectedHandIds=selectedHandIds.filter(id=>hand.some(c=>c.id===id));
+  const selected=hand.filter(x=>selectedHandIds.includes(x.id));
+  if(!selected.length)pendingPos=null;if(!canFlipStraightSkel(selected))skelFlip180=false;
 
-  const requiredMove = readyToPlay ? findFirstValidMove(board, hand, false) : null;
-  const anyMove = readyToPlay ? (requiredMove || findFirstValidMove(board, hand, true)) : null;
-  $("btn-pass").disabled = !(readyToPlay && !requiredMove);
-  $("btn-hint").classList.toggle("hidden", !(readyToPlay && anyMove));
+  let pendOverlay=null;const pbar=$("pending-bar");
+  if(pendingPos&&selected.length){
+    const prev=buildPreviewCell(board,pendingPos.r,pendingPos.c,selected,rotSteps,skelFlip180);
+    if(prev.cell){
+      pendOverlay={key:`${pendingPos.r}_${pendingPos.c}`,cell:prev.cell,ok:prev.ok,isTry:!readyToPlay};
+      pbar.classList.remove("hidden");pbar.classList.toggle("is-try",!readyToPlay);pbar.classList.toggle("is-ng",readyToPlay&&!prev.ok);
+      $("pending-status").textContent=!readyToPlay?(prev.ok?`👀 お試し中 (${pendingPos.r}, ${pendingPos.c})：自分の配置番になると確定できます`:`👀 お試し中：${prev.err}`):(prev.ok?`✅ 仮置き中 (${pendingPos.r}, ${pendingPos.c})：確定を押すか、回転/キャンセルできます`:`⚠️ 仮置き中：${prev.err}`);
+      $("btn-pend-confirm").disabled=!(readyToPlay&&prev.ok);
+      $("btn-pend-skel180").classList.toggle("hidden",!canFlipStraightSkel(selected));
+    }else{pendingPos=null;pbar.classList.add("hidden");}
+  }else pbar.classList.add("hidden");
 
-  if (readyToPlay) {
-    if (requiredMove) {
-      $("g-hint").textContent = "※ 出せるカードがあるためパスできません（見つからない時は「💡 置ける場所ヒント」を押してください）。";
-    } else if (anyMove) {
-      $("g-hint").textContent = "✅ 交差スケルトンしか置けないため「パス」できます（盤面の直線に交差を置くことも可能です）。";
-    } else {
-      $("g-hint").textContent = "✅ 出せるカード（合法手）がないため「パス」できます。";
-    }
-  } else {
-    $("g-hint").textContent = "※ 他の人の手番中やドロー前も、手札を選んで組み合わせや盤面配置をお試しできます。";
-  }
-
-  selectedHandIds = selectedHandIds.filter((id) => hand.some((c) => c.id === id));
-  const selected = hand.filter((x) => selectedHandIds.includes(x.id));
-  if (!selected.length) pendingPos = null;
-  if (!canFlipStraightSkel(selected)) skelFlip180 = false;
-
-  let pendOverlay = null;
-  const pbar = $("pending-bar");
-  if (pendingPos && selected.length) {
-    const prev = buildPreviewCell(board, pendingPos.r, pendingPos.c, selected, rotSteps, skelFlip180);
-    if (prev.cell) {
-      pendOverlay = { key: `${pendingPos.r}_${pendingPos.c}`, cell: prev.cell, ok: prev.ok, isTry: !readyToPlay };
-      pbar.classList.remove("hidden");
-      pbar.classList.toggle("is-try", !readyToPlay);
-      pbar.classList.toggle("is-ng", readyToPlay && !prev.ok);
-      if (!readyToPlay) {
-        $("pending-status").textContent = prev.ok
-          ? `👀 お試し中 (${pendingPos.r}, ${pendingPos.c})：自分の配置番になると確定できます`
-          : `👀 お試し中：${prev.err}`;
-      } else {
-        $("pending-status").textContent = prev.ok
-          ? `✅ 仮置き中 (${pendingPos.r}, ${pendingPos.c})：確定を押すか、回転/キャンセルできます`
-          : `⚠️ 仮置き中：${prev.err}`;
-      }
-      $("btn-pend-confirm").disabled = !(readyToPlay && prev.ok);
-      $("btn-pend-skel180").classList.toggle("hidden", !canFlipStraightSkel(selected));
-    } else {
-      pendingPos = null;
-      pbar.classList.add("hidden");
-    }
-  } else {
-    pbar.classList.add("hidden");
-  }
-
-  // 自分の手番でなくても盤面のお試しタップを可能にする
-  renderBoardInto($("g-board"), board, true, roomData.lastKey, pendOverlay, hintKey);
-  renderPreviewBox(hand, readyToPlay);
-  renderHand(hand, lastDrawnId);
+  renderBoardInto($("g-board"),board,true,roomData.lastKey,pendOverlay,hintKey);
+  renderPreviewBox(hand,readyToPlay);renderHand(hand,myP.lastDrawnId||null);
 }
 
-function createHandCardEl(card, selected, lastDrawnId) {
-  const isSel = selectedHandIds.includes(card.id);
-  const isNew = card.id === lastDrawnId;
-  const isSkel = card.type !== "line";
-  const flipActive = canFlipStraightSkel(selected) && skelFlip180;
-  const rot = isSel ? ((card.type === "skel" && flipActive) ? (rotSteps + 2) % 4 : rotSteps) : 0;
-  const seg = cardToSeg(card, rot);
-  const svg = renderCellSvg([seg], card.type);
-  const cNameA = COLOR_INFO[seg.ca]?.name || "透明";
-  const cNameB = COLOR_INFO[seg.cb]?.name || "透明";
-  const colorText = cNameA === cNameB ? cNameA : `${cNameA}／${cNameB}`;
-  const noColorSkel = card.type === "line" && !canOverlayColorSkel(card);
-
-  const el = document.createElement("div");
-  el.className = "hcard" + (isSkel ? " is-skel" : "") + (isNew ? " is-new" : "") + (isSel ? " sel" : "");
-  el.innerHTML = `${card.heavy ? '<span class="heavy-mark">重</span>' : ""}
-    ${noColorSkel ? '<span class="no-skel-mark">色変不可</span>' : ""}
-    ${isNew ? '<span class="new-mark">NEW</span>' : ""}
-    <div class="svg-wrap">${svg}</div>
-    <div class="lbl">${colorText}</div>`;
-  el.onclick = () => {
-    if (isSel) {
-      selectedHandIds = selectedHandIds.filter((x) => x !== card.id);
-    } else {
-      if (selectedHandIds.length >= 2) selectedHandIds.shift();
-      selectedHandIds.push(card.id);
-    }
-    skelFlip180 = false;
-    pendingPos = null;
-    hintKey = null;
-    $("g-hint-banner").classList.add("hidden");
-    renderGame();
-  };
+function createHandCardEl(card,selected,lastDrawnId){
+  const isSel=selectedHandIds.includes(card.id),isNew=card.id===lastDrawnId,isSkel=card.type!=="line",flipActive=canFlipStraightSkel(selected)&&skelFlip180;
+  const rot=isSel?((card.type==="skel"&&flipActive)?(rotSteps+2)%4:rotSteps):0,seg=cardToSeg(card,rot);
+  const cA=COLOR_INFO[seg.ca]?.name||"透明",cB=COLOR_INFO[seg.cb]?.name||"透明",colorText=cA===cB?cA:`${cA}／${cB}`,noColorSkel=card.type==="line"&&!canOverlayColorSkel(card);
+  const el=document.createElement("div");
+  el.className="hcard"+(isSkel?" is-skel":"")+(isNew?" is-new":"")+(isSel?" sel":"");
+  el.innerHTML=`${card.heavy?'<span class="heavy-mark">重</span>':""}${noColorSkel?'<span class="no-skel-mark">色変不可</span>':""}${isNew?'<span class="new-mark">NEW</span>':""}<div class="svg-wrap">${renderCellSvg([seg],card.type)}</div><div class="lbl">${colorText}</div>`;
+  el.onclick=()=>{if(isSel)selectedHandIds=selectedHandIds.filter(x=>x!==card.id);else{if(selectedHandIds.length>=2)selectedHandIds.shift();selectedHandIds.push(card.id);}skelFlip180=false;pendingPos=null;hintKey=null;$("g-hint-banner").classList.add("hidden");renderGame();};
   return el;
 }
 
-function renderHand(hand, lastDrawnId) {
-  const selected = hand.filter((x) => selectedHandIds.includes(x.id));
-  const lines = hand.filter((c) => c.type === "line");
-  const skels = hand.filter((c) => c.type === "skel");
-  const crosses = hand.filter((c) => c.type === "cross");
-
-  const fillTier = (elId, cntId, cards) => {
-    const wrap = $(elId);
-    $(cntId).textContent = `${cards.length}枚`;
-    wrap.innerHTML = "";
-    if (!cards.length) {
-      wrap.innerHTML = '<span class="muted" style="font-size:0.74rem;">（なし）</span>';
-      return;
-    }
-    cards.forEach((c) => wrap.appendChild(createHandCardEl(c, selected, lastDrawnId)));
-  };
-
-  fillTier("g-hand-line", "cnt-line", lines);
-  fillTier("g-hand-skel", "cnt-skel", skels);
-  fillTier("g-hand-cross", "cnt-cross", crosses);
-
-  const hasSel = selectedHandIds.length > 0;
-  $("btn-rot").disabled = !hasSel;
-  $("btn-clr").disabled = !hasSel;
-  $("rot-deg").textContent = rotSteps * 90;
+function renderHand(hand,lastDrawnId){
+  const selected=hand.filter(x=>selectedHandIds.includes(x.id));
+  const fill=(elId,cntId,cards)=>{const w=$(elId);$(cntId).textContent=`${cards.length}枚`;w.innerHTML="";if(!cards.length){w.innerHTML='<span class="muted" style="font-size:0.74rem;">（なし）</span>';return;}cards.forEach(c=>w.appendChild(createHandCardEl(c,selected,lastDrawnId)));};
+  fill("g-hand-line","cnt-line",hand.filter(c=>c.type==="line"));
+  fill("g-hand-skel","cnt-skel",hand.filter(c=>c.type==="skel"));
+  fill("g-hand-cross","cnt-cross",hand.filter(c=>c.type==="cross"));
+  const hasSel=selectedHandIds.length>0;$("btn-rot").disabled=!hasSel;$("btn-clr").disabled=!hasSel;$("rot-deg").textContent=rotSteps*90;
 }
 
-$("btn-zoom-in").onclick = () => { cellSize = Math.min(110, cellSize + 8); renderAll(); };
-$("btn-zoom-out").onclick = () => { cellSize = Math.max(32, cellSize - 8); renderAll(); };
-$("btn-rot").onclick = () => { rotSteps = (rotSteps + 1) % 4; renderGame(); };
-$("btn-clr").onclick = () => { selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; renderGame(); };
+$("btn-zoom-in").onclick=()=>{cellSize=Math.min(110,cellSize+8);renderAll();};
+$("btn-zoom-out").onclick=()=>{cellSize=Math.max(32,cellSize-8);renderAll();};
+$("btn-rot").onclick=()=>{rotSteps=(rotSteps+1)%4;renderGame();};
+$("btn-clr").onclick=()=>{selectedHandIds=[];rotSteps=0;skelFlip180=false;pendingPos=null;renderGame();};
+$("btn-pend-rot").onclick=()=>{rotSteps=(rotSteps+1)%4;renderGame();};
+$("btn-pend-skel180").onclick=()=>{skelFlip180=!skelFlip180;renderGame();};
+$("btn-pend-cancel").onclick=()=>{pendingPos=null;renderGame();};
 
-$("btn-pend-rot").onclick = () => { rotSteps = (rotSteps + 1) % 4; renderGame(); };
-$("btn-pend-skel180").onclick = () => { skelFlip180 = !skelFlip180; renderGame(); };
-$("btn-pend-cancel").onclick = () => { pendingPos = null; renderGame(); };
-
-$("btn-hint").onclick = () => {
-  const board = roomData.board || {};
-  const hand = roomData.players[myUid]?.hand || [];
-  const move = findFirstValidMove(board, hand, false) || findFirstValidMove(board, hand, true);
-  if (!move) return;
-  hintKey = move.key;
-  selectedHandIds = move.cards.map((c) => c.id);
-  rotSteps = move.rot;
-  skelFlip180 = !!move.flipSkel;
-  pendingPos = null;
-  const hb = $("g-hint-banner");
-  hb.textContent = `💡 ヒント（紫枠）：${move.desc}`;
-  hb.classList.remove("hidden");
-  renderGame();
+$("btn-hint").onclick=()=>{
+  const board=roomData.board||{},hand=roomData.players[myUid]?.hand||[],move=findFirstValidMove(board,hand,false)||findFirstValidMove(board,hand,true);
+  if(!move)return;
+  hintKey=move.key;selectedHandIds=move.cards.map(c=>c.id);rotSteps=move.rot;skelFlip180=!!move.flipSkel;pendingPos=null;
+  const hb=$("g-hint-banner");hb.textContent=`💡 ヒント（紫枠）：${move.desc}`;hb.classList.remove("hidden");renderGame();
 };
 
-$("btn-draw").onclick = async () => {
-  const deck = [...(roomData.deck || [])];
-  if (!deck.length) return;
-  const drawn = deck.pop();
-  const hand = [...(roomData.players[myUid].hand || []), drawn];
-  await update(ref(db, `rooms/${roomId}`), {
-    deck,
-    [`players/${myUid}/hand`]: hand,
-    [`players/${myUid}/lastDrawnId`]: drawn.id,
-    hasDrawn: true
-  });
+$("btn-draw").onclick=async()=>{
+  const deck=[...(roomData.deck||[])];if(!deck.length)return;
+  const drawn=deck.pop(),hand=[...(roomData.players[myUid].hand||[]),drawn];
+  await update(ref(db,`rooms/${roomId}`),{deck,[`players/${myUid}/hand`]:hand,[`players/${myUid}/lastDrawnId`]:drawn.id,hasDrawn:true});
 };
 
-function nextTurnIndex() {
-  const order = roomData.turnOrder || [];
-  const players = roomData.players || {};
-  for (let i = 1; i <= order.length; i++) {
-    const idx = (roomData.turnIndex + i) % order.length;
-    if (players[order[idx]]?.online) return idx;
-  }
-  return (roomData.turnIndex + 1) % order.length;
-}
+function nextTurnIndex(){const o=roomData.turnOrder||[],p=roomData.players||{};for(let i=1;i<=o.length;i++){const idx=(roomData.turnIndex+i)%o.length;if(p[o[idx]]?.online)return idx;}return(roomData.turnIndex+1)%o.length;}
 
-$("btn-pass").onclick = async () => {
-  const board = roomData.board || {};
-  const hand = roomData.players[myUid]?.hand || [];
-  if (findFirstValidMove(board, hand, false)) {
-    showErr("g-msg", "配置できるカードがあるためパスできません。");
-    return;
-  }
-
-  const order = roomData.turnOrder || [];
-  const players = roomData.players || {};
-  const onlineCount = Math.max(1, order.filter((uid) => players[uid]?.online).length);
-  const deckLen = (roomData.deck || []).length;
-
-  const nextStreak = deckLen === 0 ? (roomData.passStreak || 0) + 1 : 0;
-  const isGameOver = deckLen === 0 && nextStreak >= onlineCount;
-
-  const hist = [...(roomData.history || []), {
-    type: "pass", uid: myUid, name: roomData.players[myUid].name, at: Date.now()
-  }];
-  selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; hintKey = null;
-  $("g-hint-banner").classList.add("hidden");
-
-  await update(ref(db, `rooms/${roomId}`), {
-    history: hist,
-    passStreak: nextStreak,
-    status: isGameOver ? "gameover" : "playing",
-    endedAt: isGameOver ? Date.now() : null,
-    turnIndex: isGameOver ? roomData.turnIndex : nextTurnIndex(),
-    hasDrawn: false
-  });
+$("btn-pass").onclick=async()=>{
+  const board=roomData.board||{},hand=roomData.players[myUid]?.hand||[];
+  if(findFirstValidMove(board,hand,false))return showErr("g-msg","配置できるカードがあるためパスできません。");
+  const order=roomData.turnOrder||[],players=roomData.players||{},onlineCount=Math.max(1,order.filter(uid=>players[uid]?.online).length),deckLen=(roomData.deck||[]).length;
+  const nextStreak=deckLen===0?(roomData.passStreak||0)+1:0,isGameOver=deckLen===0&&nextStreak>=onlineCount;
+  const hist=[...(roomData.history||[]),{type:"pass",uid:myUid,name:roomData.players[myUid].name,at:Date.now()}];
+  selectedHandIds=[];rotSteps=0;skelFlip180=false;pendingPos=null;hintKey=null;$("g-hint-banner").classList.add("hidden");
+  await update(ref(db,`rooms/${roomId}`),{history:hist,passStreak:nextStreak,status:isGameOver?"gameover":"playing",endedAt:isGameOver?Date.now():null,turnIndex:isGameOver?roomData.turnIndex:nextTurnIndex(),hasDrawn:false});
 };
 
-$("btn-skip-off").onclick = async () => {
-  await update(ref(db, `rooms/${roomId}`), { turnIndex: nextTurnIndex(), hasDrawn: false });
-};
+$("btn-skip-off").onclick=async()=>{await update(ref(db,`rooms/${roomId}`),{turnIndex:nextTurnIndex(),hasDrawn:false});};
 
-function onCellTap(r, c) {
-  const hand = roomData.players[myUid]?.hand || [];
-  const selected = hand.filter((x) => selectedHandIds.includes(x.id));
-  if (!selected.length) {
-    showErr("g-msg", "先に手札からカードを選択してください（他人の手番中でもお試しできます）。");
-    return;
-  }
-  const board = roomData.board || {};
-  const curCheck = buildPreviewCell(board, r, c, selected, rotSteps, skelFlip180);
-  if (!curCheck.cell) {
-    showErr("g-msg", curCheck.err);
-    return;
-  }
-  if (!curCheck.ok) {
-    const flipCandidates = canFlipStraightSkel(selected) ? [skelFlip180, !skelFlip180] : [false];
-    outer: for (const fs of flipCandidates) {
-      for (let rr = 0; rr < 4; rr++) {
-        const testRot = (rotSteps + rr) % 4;
-        const tryRes = validatePlace({ board, r, c, selected, rot: testRot, flipSkel: fs });
-        if (tryRes.ok) {
-          rotSteps = testRot;
-          skelFlip180 = fs;
-          break outer;
-        }
-      }
+function onCellTap(r,c){
+  const hand=roomData.players[myUid]?.hand||[],selected=hand.filter(x=>selectedHandIds.includes(x.id));
+  if(!selected.length)return showErr("g-msg","先に手札からカードを選択してください（他人の手番中でもお試しできます）。");
+  const board=roomData.board||{},curCheck=buildPreviewCell(board,r,c,selected,rotSteps,skelFlip180);
+  if(!curCheck.cell)return showErr("g-msg",curCheck.err);
+  if(!curCheck.ok){
+    outer:for(const fs of(canFlipStraightSkel(selected)?[skelFlip180,!skelFlip180]:[false])){
+      for(let rr=0;rr<4;rr++){const tr=(rotSteps+rr)%4;if(validatePlace({board,r,c,selected,rot:tr,flipSkel:fs}).ok){rotSteps=tr;skelFlip180=fs;break outer;}}
     }
   }
-  pendingPos = { r, c };
-  renderGame();
+  pendingPos={r,c};renderGame();
 }
 
-$("btn-pend-confirm").onclick = async () => {
-  const order = roomData.turnOrder || [];
-  const curUid = order[roomData.turnIndex % order.length];
-  const deck = roomData.deck || [];
-  const readyToPlay = curUid === myUid && (roomData.hasDrawn || deck.length === 0);
-  if (!readyToPlay) {
-    showErr("g-msg", "今はあなたの配置番ではありません（お試し表示中です）。");
-    return;
-  }
-  if (!pendingPos) return;
-  const { r, c } = pendingPos;
-  const hand = roomData.players[myUid]?.hand || [];
-  const selected = hand.filter((x) => selectedHandIds.includes(x.id));
-  const board = roomData.board || {};
-  const res = validatePlace({ board, r, c, selected, rot: rotSteps, flipSkel: skelFlip180 });
-  if (!res.ok) { showErr("g-msg", res.err); return; }
-
-  const key = `${r}_${c}`;
-  const nextBoard = { ...board, [key]: res.cell };
-  const nextHand = hand.filter((x) => !selectedHandIds.includes(x.id));
-  const cleared = checkClear(nextBoard, roomData.themeId);
-  const hist = [...(roomData.history || []), {
-    type: "place", uid: myUid, name: roomData.players[myUid].name,
-    key, r, c, cell: res.cell, cards: selected, at: Date.now()
-  }];
-
-  selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; hintKey = null;
-  $("g-hint-banner").classList.add("hidden");
-  await update(ref(db, `rooms/${roomId}`), {
-    [`board/${key}`]: res.cell,
-    [`players/${myUid}/hand`]: nextHand,
-    lastKey: key, history: hist,
-    passStreak: 0,
-    status: cleared ? "cleared" : "playing",
-    endedAt: cleared ? Date.now() : null,
-    turnIndex: cleared ? roomData.turnIndex : nextTurnIndex(),
-    hasDrawn: false
-  });
+$("btn-pend-confirm").onclick=async()=>{
+  const order=roomData.turnOrder||[],curUid=order[roomData.turnIndex%order.length],deck=roomData.deck||[];
+  if(!(curUid===myUid&&(roomData.hasDrawn||deck.length===0)))return showErr("g-msg","今はあなたの配置番ではありません（お試し表示中です）。");
+  if(!pendingPos)return;
+  const{r,c}=pendingPos,hand=roomData.players[myUid]?.hand||[],selected=hand.filter(x=>selectedHandIds.includes(x.id)),board=roomData.board||{};
+  const res=validatePlace({board,r,c,selected,rot:rotSteps,flipSkel:skelFlip180});
+  if(!res.ok)return showErr("g-msg",res.err);
+  const key=`${r}_${c}`,nextBoard={...board,[key]:res.cell},nextHand=hand.filter(x=>!selectedHandIds.includes(x.id)),cleared=checkClear(nextBoard,roomData.themeId);
+  const hist=[...(roomData.history||[]),{type:"place",uid:myUid,name:roomData.players[myUid].name,key,r,c,cell:res.cell,cards:selected,at:Date.now()}];
+  selectedHandIds=[];rotSteps=0;skelFlip180=false;pendingPos=null;hintKey=null;$("g-hint-banner").classList.add("hidden");
+  await update(ref(db,`rooms/${roomId}`),{[`board/${key}`]:res.cell,[`players/${myUid}/hand`]:nextHand,lastKey:key,history:hist,passStreak:0,status:cleared?"cleared":"playing",endedAt:cleared?Date.now():null,turnIndex:cleared?roomData.turnIndex:nextTurnIndex(),hasDrawn:false});
 };
 
-function renderResult() {
-  const isOver = roomData.status === "gameover";
-  const tagEl = $("res-tag");
-  tagEl.textContent = isOver ? "💀 GAME OVER 💀" : "🎉 CLEAR! 🎉";
-  tagEl.classList.toggle("is-over", isOver);
-  $("res-heading").textContent = isOver
-    ? "山札がなくなり、全員が1周パスしました…"
-    : "すべての線が一本につながりました！";
-
-  $("clr-sheet").textContent = `使用お題：${roomData.themeName}`;
-  renderBoardInto($("clr-board"), roomData.board || {}, false, roomData.lastKey);
-  const ul = $("clr-members");
-  ul.innerHTML = "";
-  (roomData.turnOrder || []).forEach((uid) => {
-    const p = roomData.players[uid];
-    if (p) {
-      const li = document.createElement("li");
-      li.textContent = isOver ? `${p.name}（残${(p.hand || []).length}枚）` : p.name;
-      ul.appendChild(li);
-    }
-  });
-  const moves = (roomData.history || []).filter((h) => h.type === "place").length;
-  const passes = (roomData.history || []).filter((h) => h.type === "pass").length;
-  const deckLeft = (roomData.deck || []).length;
-  $("clr-stats").textContent = `配置手数：${moves}手 ／ パス：${passes}回 ／ 残り山札：${deckLeft}枚`;
-  $("btn-clr-reset").classList.toggle("hidden", roomData.hostUid !== myUid);
+function renderResult(){
+  const isOver=roomData.status==="gameover",tagEl=$("res-tag");
+  tagEl.textContent=isOver?"💀 GAME OVER 💀":"🎉 CLEAR! 🎉";tagEl.classList.toggle("is-over",isOver);
+  $("res-heading").textContent=isOver?"山札がなくなり、全員が1周パスしました…":"すべての線が一本につながりました！";
+  $("clr-sheet").textContent=`使用お題：${roomData.themeName}`;
+  renderBoardInto($("clr-board"),roomData.board||{},false,roomData.lastKey);
+  const ul=$("clr-members");ul.innerHTML="";
+  (roomData.turnOrder||[]).forEach(uid=>{const p=roomData.players[uid];if(p){const li=document.createElement("li");li.textContent=isOver?`${p.name}（残${(p.hand||[]).length}枚）`:p.name;ul.appendChild(li);}});
+  const moves=(roomData.history||[]).filter(h=>h.type==="place").length,passes=(roomData.history||[]).filter(h=>h.type==="pass").length;
+  $("clr-stats").textContent=`配置手数：${moves}手 ／ パス：${passes}回 ／ 残り山札：${(roomData.deck||[]).length}枚`;
+  $("btn-clr-reset").classList.toggle("hidden",roomData.hostUid!==myUid);
 }
 
-function buildReplayBoardAt(step) {
-  const theme = THEMES.find((t) => t.id === roomData.themeId) || THEMES[0];
-  const board = buildThemeBoardCells(theme);
-  let lastKey = null;
-  const hist = roomData.history || [];
-  for (let i = 0; i < step; i++) {
-    const h = hist[i];
-    if (h.type === "place") { board[h.key] = h.cell; lastKey = h.key; }
-  }
-  return { board, lastKey };
+function buildReplayBoardAt(step){
+  const theme=THEMES.find(t=>t.id===roomData.themeId)||THEMES[0],board=buildThemeBoardCells(theme);let lastKey=null;
+  const hist=roomData.history||[];for(let i=0;i<step;i++){const h=hist[i];if(h.type==="place"){board[h.key]=h.cell;lastKey=h.key;}}
+  return{board,lastKey};
 }
-
-function renderReplay() {
-  const hist = roomData.history || [];
-  const { board, lastKey } = buildReplayBoardAt(repIdx);
-  renderBoardInto($("rep-board"), board, false, lastKey);
-  $("rep-step").textContent = `${repIdx} / ${hist.length} 手目`;
-  if (repIdx === 0) { $("rep-desc").textContent = "初期お題シート"; }
-  else {
-    const h = hist[repIdx - 1];
-    $("rep-desc").textContent = h.type === "pass" ? `${h.name}：パス` : `${h.name}：(${h.r}, ${h.c}) に配置`;
-  }
-  const ol = $("rep-log");
-  ol.innerHTML = "";
-  hist.forEach((h, i) => {
-    const li = document.createElement("li");
-    if (i + 1 === repIdx) li.className = "cur";
-    li.textContent = h.type === "pass" ? `${h.name}：パス` : `${h.name} → (${h.r}, ${h.c}) に配置`;
-    li.onclick = () => { stopRepPlay(); repIdx = i + 1; renderReplay(); };
-    ol.appendChild(li);
-  });
+function renderReplay(){
+  const hist=roomData.history||[],{board,lastKey}=buildReplayBoardAt(repIdx);
+  renderBoardInto($("rep-board"),board,false,lastKey);
+  $("rep-step").textContent=`${repIdx} / ${hist.length} 手目`;
+  $("rep-desc").textContent=repIdx===0?"初期お題シート":(hist[repIdx-1].type==="pass"?`${hist[repIdx-1].name}：パス`:`${hist[repIdx-1].name}：(${hist[repIdx-1].r}, ${hist[repIdx-1].c}) に配置`);
+  const ol=$("rep-log");ol.innerHTML="";
+  hist.forEach((h,i)=>{const li=document.createElement("li");if(i+1===repIdx)li.className="cur";li.textContent=h.type==="pass"?`${h.name}：パス`:`${h.name} → (${h.r}, ${h.c}) に配置`;li.onclick=()=>{stopRepPlay();repIdx=i+1;renderReplay();};ol.appendChild(li);});
 }
-
-function stopRepPlay() {
-  if (repTimer) { clearInterval(repTimer); repTimer = null; }
-  $("btn-rep-play").classList.remove("hidden");
-  $("btn-rep-pause").classList.add("hidden");
-}
-
-$("btn-open-rep").onclick = () => { repIdx = 0; stopRepPlay(); showScreen("replay"); renderReplay(); };
-$("btn-close-rep").onclick = () => { stopRepPlay(); showScreen("clear"); };
-$("btn-rep-0").onclick = () => { stopRepPlay(); repIdx = 0; renderReplay(); };
-$("btn-rep-prev").onclick = () => { stopRepPlay(); repIdx = Math.max(0, repIdx - 1); renderReplay(); };
-$("btn-rep-next").onclick = () => { stopRepPlay(); repIdx = Math.min((roomData.history || []).length, repIdx + 1); renderReplay(); };
-$("btn-rep-play").onclick = () => {
-  const max = (roomData.history || []).length;
-  if (repIdx >= max) repIdx = 0;
-  $("btn-rep-play").classList.add("hidden");
-  $("btn-rep-pause").classList.remove("hidden");
-  repTimer = setInterval(() => {
-    if (repIdx >= max) { stopRepPlay(); return; }
-    repIdx++; renderReplay();
-  }, Number($("rep-speed").value));
-};
-$("btn-rep-pause").onclick = stopRepPlay;
-$("rep-speed").onchange = () => { if (repTimer) { stopRepPlay(); $("btn-rep-play").click(); } };
-
-$("btn-rules").onclick = () => $("mod-rules").classList.remove("hidden");
-$("btn-rules-close").onclick = () => $("mod-rules").classList.add("hidden");
-
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, (m) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-}
+function stopRepPlay(){if(repTimer){clearInterval(repTimer);repTimer=null;}$("btn-rep-play").classList.remove("hidden");$("btn-rep-pause").classList.add("hidden");}
+$("btn-open-rep").onclick=()=>{repIdx=0;stopRepPlay();showScreen("replay");renderReplay();};
+$("btn-close-rep").onclick=()=>{stopRepPlay();showScreen("clear");};
+$("btn-rep-0").onclick=()=>{stopRepPlay();repIdx=0;renderReplay();};
+$("btn-rep-prev").onclick=()=>{stopRepPlay();repIdx=Math.max(0,repIdx-1);renderReplay();};
+$("btn-rep-next").onclick=()=>{stopRepPlay();repIdx=Math.min((roomData.history||[]).length,repIdx+1);renderReplay();};
+$("btn-rep-play").onclick=()=>{const max=(roomData.history||[]).length;if(repIdx>=max)repIdx=0;$("btn-rep-play").classList.add("hidden");$("btn-rep-pause").classList.remove("hidden");repTimer=setInterval(()=>{if(repIdx>=max){stopRepPlay();return;}repIdx++;renderReplay();},Number($("rep-speed").value));};
+$("btn-rep-pause").onclick=stopRepPlay;
+$("rep-speed").onchange=()=>{if(repTimer){stopRepPlay();$("btn-rep-play").click();}};
+$("btn-rules").onclick=()=>$("mod-rules").classList.remove("hidden");
+$("btn-rules-close").onclick=()=>$("mod-rules").classList.add("hidden");
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 </script>
 </body>
 </html>
