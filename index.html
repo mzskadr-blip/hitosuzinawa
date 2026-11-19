@@ -1989,4 +1989,12 @@ $("btn-rep-play").onclick = () => {
 $("btn-rep-pause").onclick = stopRepPlay;
 $("rep-speed").onchange = () => { if (repTimer) { stopRepPlay(); $("btn-rep-play").click(); } };
 
-$("btn-rules").onclick = () => $("mod
+$("btn-rules").onclick = () => $("mod-rules").classList.remove("hidden");
+$("btn-rules-close").onclick = () => $("mod-rules").classList.add("hidden");
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (m) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+}
+</script>
+</body>
+</html>
