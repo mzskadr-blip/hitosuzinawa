@@ -101,10 +101,10 @@
     @keyframes toastPop { from { opacity: 0; transform: translateX(18px) scale(0.92); } to { opacity: 1; transform: translateX(0) scale(1); } }
 
     .board-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.78rem; color: var(--muted); }
-    .board-scroll { background: #020617; border: 1px solid var(--border); border-radius: 12px; padding: 10px; overflow: auto; max-height: 48vh; display: flex; justify-content: center; align-items: flex-start; }
+    .board-scroll { background: #020617; border: 1px solid var(--border); border-radius: 12px; padding: 10px; overflow: auto; max-height: 52vh; display: flex; justify-content: center; align-items: flex-start; }
     .board-grid { display: grid; gap: 3px; background: #1e293b; padding: 4px; border-radius: 8px; }
     .cell {
-      width: var(--cell-size, 74px); height: var(--cell-size, 74px);
+      width: var(--cell-size, 56px); height: var(--cell-size, 56px);
       background: #141c2c; border-radius: 5px; position: relative; cursor: pointer;
       border: 1px dashed #334155; overflow: hidden; user-select: none;
     }
@@ -115,6 +115,7 @@
     .cell.hint-cell { box-shadow: inset 0 0 0 3px #c084fc; background: #2e1065; }
     .cell.pending-ok { box-shadow: inset 0 0 0 3px #22c55e; background: #0b2219; }
     .cell.pending-ng { box-shadow: inset 0 0 0 3px #ef4444; background: #2a1015; }
+    .cell.pending-try { box-shadow: inset 0 0 0 3px #a855f7; background: #1e1038; }
     .cell.readonly { cursor: default; }
     .cell.readonly:hover { border-color: #334155; }
     .cell.has-card.readonly:hover { border-color: #64748b; }
@@ -122,9 +123,10 @@
     .cell-theme-lbl { position: absolute; bottom: 2px; left: 3px; font-size: 9px; font-weight: 800; color: #93c5fd; pointer-events: none; background: rgba(2,6,23,0.7); padding: 0 2px; border-radius: 2px; }
     .pending-bar { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: #172554; border: 2px solid #38bdf8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .pending-bar.is-ng { background: #450a0a; border-color: #f87171; }
+    .pending-bar.is-try { background: #2e1065; border-color: #c084fc; }
     .preview-box { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .preview-cards { display: flex; align-items: center; gap: 8px; }
-    .preview-mini { width: 58px; height: 58px; border-radius: 8px; overflow: hidden; background: #070b12; border: 1px solid #475569; flex-shrink: 0; }
+    .preview-mini { width: 54px; height: 54px; border-radius: 8px; overflow: hidden; background: #070b12; border: 1px solid #475569; flex-shrink: 0; }
     .preview-mini.is-skel {
       background-color: #475569;
       background-image: linear-gradient(45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
@@ -133,14 +135,19 @@
         linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.12) 75%);
       background-size: 10px 10px; border: 1px dashed #cbd5e1;
     }
-    .preview-result { width: 68px; height: 68px; border-radius: 9px; overflow: hidden; background: #070b12; border: 2px solid #38bdf8; flex-shrink: 0; }
+    .preview-result { width: 64px; height: 64px; border-radius: 9px; overflow: hidden; background: #070b12; border: 2px solid #38bdf8; flex-shrink: 0; }
     .preview-info { flex: 1; min-width: 160px; font-size: 0.82rem; }
     .hand-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-top: 8px; }
     .hand-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 0.84rem; font-weight: 700; }
-    .hand-list { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 6px; }
+
+    /* 手札3段表示 */
+    .hand-tiers { display: flex; flex-direction: column; gap: 8px; }
+    .hand-tier { background: rgba(11, 17, 32, 0.55); border: 1px solid #283548; border-radius: 9px; padding: 6px 8px; }
+    .tier-head { font-size: 0.74rem; font-weight: 800; color: #94a3b8; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .hand-list { display: flex; gap: 7px; overflow-x: auto; padding: 2px 2px 4px; align-items: center; min-height: 28px; }
     .hcard {
-      flex: 0 0 92px; background: #070b12; border: 2px solid #334155; border-radius: 10px;
-      padding: 5px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; position: relative;
+      flex: 0 0 78px; background: #070b12; border: 2px solid #334155; border-radius: 9px;
+      padding: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; position: relative;
       transition: transform 0.1s, border-color 0.1s;
     }
     .hcard.is-skel {
@@ -149,16 +156,17 @@
         linear-gradient(-45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
         linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.12) 75%),
         linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.12) 75%);
-      background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0; border: 2px dashed #cbd5e1;
+      background-size: 10px 10px; background-position: 0 0, 0 5px, 5px -5px, -5px 0; border: 2px dashed #cbd5e1;
     }
-    .hcard.sel { border-color: #38bdf8; border-style: solid; box-shadow: 0 0 0 2px rgba(56,189,248,0.45); transform: translateY(-4px); }
-    .hcard .svg-wrap { width: 64px; height: 64px; border-radius: 6px; overflow: hidden; }
+    .hcard.is-new { border-color: #22c55e; box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.45); }
+    .hcard.sel { border-color: #38bdf8; border-style: solid; box-shadow: 0 0 0 2px rgba(56,189,248,0.55); transform: translateY(-3px); }
+    .hcard .svg-wrap { width: 50px; height: 50px; border-radius: 5px; overflow: hidden; }
     .hcard.is-skel .svg-wrap { background: rgba(255, 255, 255, 0.14); border: 1px dashed rgba(255,255,255,0.35); }
-    .hcard .lbl { font-size: 10px; font-weight: 800; text-align: center; color: #f8fafc; line-height: 1.2; }
-    .hcard .type-pill { font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 800; background: #1e293b; color: #93c5fd; border: 1px solid #334155; }
-    .hcard.is-skel .type-pill { background: #e2e8f0; color: #0f172a; border-color: #94a3b8; }
-    .hcard .heavy-mark { position: absolute; top: 3px; right: 3px; font-size: 9px; font-weight: 900; background: #f8fafc; color: #0f172a; padding: 0 4px; border-radius: 3px; border: 1px solid #64748b; }
-    .hcard .no-skel-mark { position: absolute; top: 3px; left: 3px; font-size: 8px; font-weight: 800; background: rgba(239, 68, 68, 0.22); color: #fca5a5; padding: 0 3px; border-radius: 3px; border: 1px solid #7f1d1d; }
+    .hcard .lbl { font-size: 9px; font-weight: 800; text-align: center; color: #f8fafc; line-height: 1.15; white-space: nowrap; }
+    .hcard .heavy-mark { position: absolute; top: 2px; right: 2px; font-size: 8px; font-weight: 900; background: #f8fafc; color: #0f172a; padding: 0 3px; border-radius: 3px; border: 1px solid #64748b; }
+    .hcard .no-skel-mark { position: absolute; top: 2px; left: 2px; font-size: 7px; font-weight: 800; background: rgba(239, 68, 68, 0.25); color: #fca5a5; padding: 0 2px; border-radius: 3px; border: 1px solid #7f1d1d; }
+    .hcard .new-mark { position: absolute; bottom: 20px; right: 2px; font-size: 8px; font-weight: 900; background: #22c55e; color: #052e16; padding: 0 4px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+
     .clear-title { text-align: center; margin-bottom: 10px; }
     .clear-title .tag { display: inline-block; background: #f59e0b; color: #0f172a; font-weight: 900; padding: 4px 14px; border-radius: 999px; margin-bottom: 6px; }
     .clear-title .tag.is-over { background: #ef4444; color: #ffffff; }
@@ -185,7 +193,7 @@
   <header class="header">
     <div class="brand">
       <span style="font-size:1.4rem;">➰</span>
-      <h1>ヒトスジナワ <small>Online v11</small></h1>
+      <h1>ヒトスジナワ <small>Online v12</small></h1>
     </div>
     <div class="row">
       <button id="btn-notify" class="btn btn-sm btn-outline">🔔 通知OFF</button>
@@ -258,7 +266,7 @@
     <div class="game-layout">
       <div class="game-main">
         <div class="board-tools">
-          <span>青枠＝お題シート（2マス分）／ タップで仮置き→確定</span>
+          <span>青枠＝お題シート（2マス分）／ タップで仮置き・お試し可</span>
           <div class="row">
             <button id="btn-zoom-out" class="btn btn-sm btn-outline">－</button>
             <button id="btn-zoom-in" class="btn btn-sm btn-outline">＋</button>
@@ -285,7 +293,7 @@
           <div id="preview-box" class="preview-box hidden"></div>
 
           <div class="hand-top">
-            <span>手札（1枚、または青/ピ/黄のみのライン＋通常スケルトン2枚組）</span>
+            <span>手札（他人の手番でも選択・組み合わせお試し可）</span>
             <div class="row">
               <button id="btn-draw" class="btn btn-sm btn-primary hidden">山札から1枚引く</button>
               <button id="btn-rot" class="btn btn-sm btn-outline" disabled>↻ 90°回転 (<span id="rot-deg">0</span>°)</button>
@@ -294,8 +302,24 @@
               <button id="btn-pass" class="btn btn-sm btn-warning" disabled>パス</button>
             </div>
           </div>
-          <div id="g-hand" class="hand-list"></div>
-          <div id="g-hint" class="muted" style="margin-top:4px;"></div>
+
+          <!-- 3段手札エリア（折り返しなし） -->
+          <div class="hand-tiers">
+            <div class="hand-tier">
+              <div class="tier-head"><span>1段目：ラインカード</span><span id="cnt-line">0枚</span></div>
+              <div id="g-hand-line" class="hand-list"></div>
+            </div>
+            <div class="hand-tier">
+              <div class="tier-head"><span>2段目：スケルトンカード（青/ピ/黄ラインと2枚組）</span><span id="cnt-skel">0枚</span></div>
+              <div id="g-hand-skel" class="hand-list"></div>
+            </div>
+            <div class="hand-tier">
+              <div class="tier-head"><span>3段目：交差スケルトン（場の直線に重ねる）</span><span id="cnt-cross">0枚</span></div>
+              <div id="g-hand-cross" class="hand-list"></div>
+            </div>
+          </div>
+
+          <div id="g-hint" class="muted" style="margin-top:6px;"></div>
         </div>
       </div>
 
@@ -431,7 +455,6 @@ const COLOR_INFO = {
 const C = 1, M = 2, Y = 4, P = 3, G = 5, O = 6;
 const PRIMARY_COLORS = new Set([C, M, Y]);
 
-/* 2マス座標系（200x100）上のポート位置 */
 const T_PT = {
   "0_0:N": [50, 0], "0_0:W": [0, 50], "0_0:S": [50, 100],
   "0_1:N": [150, 0], "0_1:E": [200, 50], "0_1:S": [150, 100]
@@ -441,46 +464,13 @@ const T_LBL = {
   "0_1:N": [150, 15], "0_1:E": [183, 53], "0_1:S": [150, 91]
 };
 
-/* ============================================================
-   実物お題シート 18種類（2マス連結：0_0 と 0_1）
-   ============================================================ */
 const THEMES = [
-  {
-    id: 1, name: "No.01",
-    paths: [
-      { c1: C, c2: M, p1: "0_0:W", p2: "0_1:N", d: "M 0 50 L 130 50 Q 150 50 150 30 L 150 0" }
-    ]
-  },
-  {
-    id: 2, name: "No.02",
-    paths: [
-      { c1: M, c2: Y, p1: "0_0:N", p2: "0_1:E", d: "M 50 0 L 50 30 Q 50 50 70 50 L 200 50" }
-    ]
-  },
-  {
-    id: 3, name: "No.03",
-    paths: [
-      { c1: Y, c2: C, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 30 Q 50 50 70 50 L 130 50 Q 150 50 150 70 L 150 100" }
-    ]
-  },
-  {
-    id: 4, name: "No.04",
-    paths: [
-      { c1: O, c2: C, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 28 Q 50 48 70 48 L 130 48 Q 150 48 150 68 L 150 100" }
-    ]
-  },
-  {
-    id: 5, name: "No.05",
-    paths: [
-      { c1: G, c2: M, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 55 50 Q 75 50 75 34 Q 75 18 95 18 L 138 18 Q 155 18 155 34 Q 155 50 172 50 L 200 50" }
-    ]
-  },
-  {
-    id: 6, name: "No.06",
-    paths: [
-      { c1: Y, c2: P, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 20 Q 50 34 66 34 L 132 34 Q 150 34 150 52 L 150 100" }
-    ]
-  },
+  { id: 1, name: "No.01", paths: [{ c1: C, c2: M, p1: "0_0:W", p2: "0_1:N", d: "M 0 50 L 130 50 Q 150 50 150 30 L 150 0" }] },
+  { id: 2, name: "No.02", paths: [{ c1: M, c2: Y, p1: "0_0:N", p2: "0_1:E", d: "M 50 0 L 50 30 Q 50 50 70 50 L 200 50" }] },
+  { id: 3, name: "No.03", paths: [{ c1: Y, c2: C, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 30 Q 50 50 70 50 L 130 50 Q 150 50 150 70 L 150 100" }] },
+  { id: 4, name: "No.04", paths: [{ c1: O, c2: C, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 28 Q 50 48 70 48 L 130 48 Q 150 48 150 68 L 150 100" }] },
+  { id: 5, name: "No.05", paths: [{ c1: G, c2: M, p1: "0_0:W", p2: "0_1:E", d: "M 0 50 L 55 50 Q 75 50 75 34 Q 75 18 95 18 L 138 18 Q 155 18 155 34 Q 155 50 172 50 L 200 50" }] },
+  { id: 6, name: "No.06", paths: [{ c1: Y, c2: P, p1: "0_0:N", p2: "0_1:S", d: "M 50 0 L 50 20 Q 50 34 66 34 L 132 34 Q 150 34 150 52 L 150 100" }] },
   {
     id: 7, name: "No.07",
     paths: [
@@ -572,9 +562,6 @@ const THEMES = [
   }
 ];
 
-/* ============================================================
-   ミッションシートデータ（No.01〜11 保存用）
-   ============================================================ */
 const MISSIONS = [
   { id: 1, stars: 1, title: "1回以上交差する", type: "cross_count", target: 1 },
   { id: 2, stars: 2, title: "2回以上交差する", type: "cross_count", target: 2 },
@@ -589,9 +576,6 @@ const MISSIONS = [
   { id: 11, stars: 3, title: "直線上にカードを7枚並べる", type: "card_line", target: 7 }
 ];
 
-/* ============================================================
-   実物山札生成（ライン63枚 ＋ スケルトン35枚 ＝ 計98枚）
-   ============================================================ */
 function createDeck() {
   const deck = [];
   let seq = 1;
@@ -601,7 +585,6 @@ function createDeck() {
     }
   };
 
-  // --- ラインカード：まっすぐな線 36枚 ---
   push("line", "straight", C, C, 4);
   push("line", "straight", M, M, 5);
   push("line", "straight", Y, Y, 3);
@@ -621,7 +604,6 @@ function createDeck() {
   push("line", "straight", M, O, 1);
   push("line", "straight", Y, O, 1);
 
-  // --- ラインカード：まがった線 27枚（時計回り基準 ca→cb）---
   push("line", "curve", C, C, 2);
   push("line", "curve", M, M, 4);
   push("line", "curve", Y, Y, 2);
@@ -640,7 +622,6 @@ function createDeck() {
   push("line", "curve", O, M, 1);
   push("line", "curve", O, Y, 1);
 
-  // --- スケルトンカード：まっすぐな線 18枚 ---
   push("skel", "straight", C, 0, 4);
   push("skel", "straight", M, 0, 4);
   push("skel", "straight", Y, 0, 4);
@@ -648,7 +629,6 @@ function createDeck() {
   push("skel", "straight", C, Y, 2);
   push("skel", "straight", M, Y, 2);
 
-  // --- スケルトンカード：まがった線 9枚（時計回り基準 ca→cb）---
   push("skel", "curve", 0, C, 2);
   push("skel", "curve", 0, M, 2);
   push("skel", "curve", 0, Y, 2);
@@ -656,7 +636,6 @@ function createDeck() {
   push("skel", "curve", C, Y, 1);
   push("skel", "curve", M, C, 1);
 
-  // --- スケルトンカード：交差した線 8枚 ---
   push("cross", "straight", C, C, 1);
   push("cross", "straight", M, M, 1);
   push("cross", "straight", Y, Y, 1);
@@ -961,13 +940,11 @@ function buildPreviewCell(board, r, c, selected, rot, flipSkel = false) {
   return { ok: false, err: res.err, cell: { segs: comp.segs, hasHeavy: selected.length === 2 } };
 }
 
-/* クリア判定：お題シート内の独立パス群も含めて全線分が1つの輪になっているか判定 */
 function checkClear(board, themeId) {
   const theme = THEMES.find((t) => t.id === themeId) || THEMES[0];
   const nodes = [];
   const nodeMap = new Map();
 
-  // 1) お題シートの各パスを頂点として登録
   theme.paths.forEach((p, idx) => {
     const [c1, d1] = p.p1.split(":");
     const [c2, d2] = p.p2.split(":");
@@ -986,7 +963,6 @@ function checkClear(board, themeId) {
     nodeMap.set(id, node);
   });
 
-  // 2) 配置された各カードのセグメントを頂点として登録
   Object.entries(board).forEach(([key, cell]) => {
     if (cell.fixed) return;
     const [r, c] = key.split("_").map(Number);
@@ -1007,7 +983,6 @@ function checkClear(board, themeId) {
 
   if (nodes.length === 0) return false;
 
-  // 各端点が隣接するノードの向かい合うポートと一致してつながっているかチェック
   for (const n of nodes) {
     for (const end of n.ends) {
       const [dr, dc] = DELTA[end.dir];
@@ -1035,7 +1010,6 @@ function checkClear(board, themeId) {
     }
   }
 
-  // BFSで全頂点が1つの連結成分になっているか確認
   const visited = new Set([nodes[0].id]);
   const q = [nodes[0].id];
   while (q.length) {
@@ -1113,7 +1087,6 @@ function renderCellSvg(segs, cardType = "line") {
   return `<svg viewBox="0 0 100 100" width="100%" height="100%" style="display:block;">${inner}</svg>`;
 }
 
-/* お題シート2マス専用SVG描画（左半分: viewBox 0 0 100 100 / 右半分: viewBox 100 0 100 100） */
 function renderThemeHalfSvg(themeId, side) {
   const theme = THEMES.find((t) => t.id === themeId) || THEMES[0];
   let inner = "";
@@ -1148,7 +1121,7 @@ let rotSteps = 0;
 let skelFlip180 = false;
 let pendingPos = null;
 let hintKey = null;
-let cellSize = 74;
+let cellSize = 56; // カメラを少し引いた初期サイズ
 let lastNotifiedTurnKey = null;
 let lastSeenReactionId = null;
 let stampCooldown = false;
@@ -1400,7 +1373,7 @@ async function startGame() {
   shuffled.forEach((p, idx) => {
     const hand = [];
     for (let k = 0; k < 3 && deck.length; k++) hand.push(deck.pop());
-    nextPlayers[p.uid] = { ...p, order: idx, hand };
+    nextPlayers[p.uid] = { ...p, order: idx, hand, lastDrawnId: null };
   });
 
   const board = buildThemeBoardCells(theme);
@@ -1472,7 +1445,7 @@ function renderBoardInto(containerEl, board, interactive = false, lastKey = null
   });
   minR -= 1; maxR += 1; minC -= 1; maxC += 1;
   while (maxR - minR + 1 < 5) { minR--; maxR++; }
-  while (maxC - minC + 1 < 6) { minC--; maxC++; }
+  while (maxC - minC + 1 < 7) { minC--; maxC++; }
 
   const cols = maxC - minC + 1;
   containerEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size, ${cellSize}px))`;
@@ -1488,9 +1461,14 @@ function renderBoardInto(containerEl, board, interactive = false, lastKey = null
       let cls = "cell";
       if (cell) cls += " has-card";
       if (board[key]?.fixed) cls += " fixed";
-      if (isPend) cls += pendOverlay.ok ? " pending-ok" : " pending-ng";
-      else if (key === hlKey) cls += " hint-cell";
-      else if (key === lastKey) cls += " last";
+      if (isPend) {
+        if (pendOverlay.isTry) cls += " pending-try";
+        else cls += pendOverlay.ok ? " pending-ok" : " pending-ng";
+      } else if (key === hlKey) {
+        cls += " hint-cell";
+      } else if (key === lastKey) {
+        cls += " last";
+      }
       if (!interactive) cls += " readonly";
       div.className = cls;
 
@@ -1519,16 +1497,17 @@ function renderBoardInto(containerEl, board, interactive = false, lastKey = null
   }
 }
 
-function renderPreviewBox(hand, canAct) {
+function renderPreviewBox(hand, readyToPlay) {
   const box = $("preview-box");
   const selected = hand.filter((c) => selectedHandIds.includes(c.id));
-  if (!canAct || selected.length === 0) {
+  if (selected.length === 0) {
     box.classList.add("hidden");
     return;
   }
   box.classList.remove("hidden");
   const showFlipBtn = canFlipStraightSkel(selected);
   const comp = composeSelection(selected, rotSteps, skelFlip180);
+  const tryBadge = !readyToPlay ? '<span style="color:#c084fc;font-weight:800;margin-left:6px;">[お試し中]</span>' : "";
 
   if (selected.length === 1) {
     const c0 = selected[0];
@@ -1548,7 +1527,7 @@ function renderPreviewBox(hand, canAct) {
     box.innerHTML = `
       <div class="preview-mini ${c0.type !== 'line' ? 'is-skel' : ''}">${renderCellSvg([seg], c0.type)}</div>
       <div class="preview-info">
-        <div style="font-weight:800;">選択中（1枚）：${cA === cB ? cA : cA + ' ↔ ' + cB}</div>
+        <div style="font-weight:800;">選択中（1枚）：${cA === cB ? cA : cA + ' ↔ ' + cB}${tryBadge}</div>
         <div class="muted">${desc}</div>
       </div>`;
   } else {
@@ -1563,14 +1542,14 @@ function renderPreviewBox(hand, canAct) {
       resHtml = `
         <div class="preview-result">${renderCellSvg(comp.segs, "line")}</div>
         <div class="preview-info">
-          <div style="font-weight:800;color:#4ade80;">✅ 合成結果：${lbls}</div>
-          <div class="muted">盤面の空きマスをタップして仮置きできます（90°回転も反映されます）。</div>
+          <div style="font-weight:800;color:#4ade80;">✅ 合成結果：${lbls}${tryBadge}</div>
+          <div class="muted">盤面の空きマスをタップして仮置き${readyToPlay ? "できます" : "を試せます"}（90°回転も反映されます）。</div>
           ${showFlipBtn ? '<div style="margin-top:6px;"><button id="btn-prev-skel180" class="btn btn-sm btn-secondary">🔄 スケルトンだけ180°回転</button></div>' : ''}
         </div>`;
     } else {
       resHtml = `
         <div class="preview-info">
-          <div style="font-weight:800;color:#f87171;">⚠️ 重ねられません</div>
+          <div style="font-weight:800;color:#f87171;">⚠️ 重ねられません${tryBadge}</div>
           <div class="muted">${comp.err}</div>
         </div>`;
     }
@@ -1597,7 +1576,9 @@ function renderGame() {
   const isMyTurn = curUid === myUid;
   const players = roomData.players || {};
   const deck = roomData.deck || [];
-  const hand = players[myUid]?.hand || [];
+  const myPlayer = players[myUid] || {};
+  const hand = myPlayer.hand || [];
+  const lastDrawnId = myPlayer.lastDrawnId || null;
   const board = roomData.board || {};
   const onlineCount = order.filter((uid) => players[uid]?.online).length;
   const passStreak = roomData.passStreak || 0;
@@ -1641,8 +1622,7 @@ function renderGame() {
     }
   } else {
     tb.className = "turn-bar";
-    tb.textContent = `${curPlayer ? curPlayer.name : "他のプレイヤー"} の手番です`;
-    pendingPos = null;
+    tb.textContent = `${curPlayer ? curPlayer.name : "他のプレイヤー"} の手番です（手札のお試し操作ができます）`;
     hintKey = null;
     $("g-hint-banner").classList.add("hidden");
   }
@@ -1664,26 +1644,33 @@ function renderGame() {
       $("g-hint").textContent = "✅ 出せるカード（合法手）がないため「パス」できます。";
     }
   } else {
-    $("g-hint").textContent = "通常スケルトンは手札の青/ピ/黄ラインと2枚組で空きマスに出します（場のカードには重ねられません）。";
+    $("g-hint").textContent = "※ 他の人の手番中やドロー前も、手札を選んで組み合わせや盤面配置をお試しできます。";
   }
 
   selectedHandIds = selectedHandIds.filter((id) => hand.some((c) => c.id === id));
   const selected = hand.filter((x) => selectedHandIds.includes(x.id));
-  if (!readyToPlay || !selected.length) pendingPos = null;
+  if (!selected.length) pendingPos = null;
   if (!canFlipStraightSkel(selected)) skelFlip180 = false;
 
   let pendOverlay = null;
   const pbar = $("pending-bar");
-  if (pendingPos && readyToPlay && selected.length) {
+  if (pendingPos && selected.length) {
     const prev = buildPreviewCell(board, pendingPos.r, pendingPos.c, selected, rotSteps, skelFlip180);
     if (prev.cell) {
-      pendOverlay = { key: `${pendingPos.r}_${pendingPos.c}`, cell: prev.cell, ok: prev.ok };
+      pendOverlay = { key: `${pendingPos.r}_${pendingPos.c}`, cell: prev.cell, ok: prev.ok, isTry: !readyToPlay };
       pbar.classList.remove("hidden");
-      pbar.classList.toggle("is-ng", !prev.ok);
-      $("pending-status").textContent = prev.ok
-        ? `✅ 仮置き中 (${pendingPos.r}, ${pendingPos.c})：確定を押すか、回転/キャンセルできます`
-        : `⚠️ 仮置き中：${prev.err}`;
-      $("btn-pend-confirm").disabled = !prev.ok;
+      pbar.classList.toggle("is-try", !readyToPlay);
+      pbar.classList.toggle("is-ng", readyToPlay && !prev.ok);
+      if (!readyToPlay) {
+        $("pending-status").textContent = prev.ok
+          ? `👀 お試し中 (${pendingPos.r}, ${pendingPos.c})：自分の配置番になると確定できます`
+          : `👀 お試し中：${prev.err}`;
+      } else {
+        $("pending-status").textContent = prev.ok
+          ? `✅ 仮置き中 (${pendingPos.r}, ${pendingPos.c})：確定を押すか、回転/キャンセルできます`
+          : `⚠️ 仮置き中：${prev.err}`;
+      }
+      $("btn-pend-confirm").disabled = !(readyToPlay && prev.ok);
       $("btn-pend-skel180").classList.toggle("hidden", !canFlipStraightSkel(selected));
     } else {
       pendingPos = null;
@@ -1693,61 +1680,77 @@ function renderGame() {
     pbar.classList.add("hidden");
   }
 
-  renderBoardInto($("g-board"), board, readyToPlay, roomData.lastKey, pendOverlay, hintKey);
+  // 自分の手番でなくても盤面のお試しタップを可能にする
+  renderBoardInto($("g-board"), board, true, roomData.lastKey, pendOverlay, hintKey);
   renderPreviewBox(hand, readyToPlay);
-  renderHand(hand, readyToPlay);
+  renderHand(hand, lastDrawnId);
 }
 
-function renderHand(hand, canAct) {
-  const wrap = $("g-hand");
-  wrap.innerHTML = "";
-  const selected = hand.filter((x) => selectedHandIds.includes(x.id));
+function createHandCardEl(card, selected, lastDrawnId) {
+  const isSel = selectedHandIds.includes(card.id);
+  const isNew = card.id === lastDrawnId;
+  const isSkel = card.type !== "line";
   const flipActive = canFlipStraightSkel(selected) && skelFlip180;
+  const rot = isSel ? ((card.type === "skel" && flipActive) ? (rotSteps + 2) % 4 : rotSteps) : 0;
+  const seg = cardToSeg(card, rot);
+  const svg = renderCellSvg([seg], card.type);
+  const cNameA = COLOR_INFO[seg.ca]?.name || "透明";
+  const cNameB = COLOR_INFO[seg.cb]?.name || "透明";
+  const colorText = cNameA === cNameB ? cNameA : `${cNameA}／${cNameB}`;
+  const noColorSkel = card.type === "line" && !canOverlayColorSkel(card);
 
-  hand.forEach((card) => {
-    const isSel = selectedHandIds.includes(card.id);
-    const isSkel = card.type !== "line";
-    const el = document.createElement("div");
-    el.className = "hcard" + (isSkel ? " is-skel" : "") + (isSel ? " sel" : "");
-    const rot = isSel ? ((card.type === "skel" && flipActive) ? (rotSteps + 2) % 4 : rotSteps) : 0;
-    const seg = cardToSeg(card, rot);
-    const svg = renderCellSvg([seg], card.type);
-    const cNameA = COLOR_INFO[seg.ca]?.name || "透明";
-    const cNameB = COLOR_INFO[seg.cb]?.name || "透明";
-    const typeLbl = card.type === "line" ? "ライン" : card.type === "cross" ? "交差スケ" : "スケルトン";
-    const colorText = cNameA === cNameB ? cNameA : `${cNameA}／${cNameB}`;
-    const noColorSkel = card.type === "line" && !canOverlayColorSkel(card);
+  const el = document.createElement("div");
+  el.className = "hcard" + (isSkel ? " is-skel" : "") + (isNew ? " is-new" : "") + (isSel ? " sel" : "");
+  el.innerHTML = `${card.heavy ? '<span class="heavy-mark">重</span>' : ""}
+    ${noColorSkel ? '<span class="no-skel-mark">色変不可</span>' : ""}
+    ${isNew ? '<span class="new-mark">NEW</span>' : ""}
+    <div class="svg-wrap">${svg}</div>
+    <div class="lbl">${colorText}</div>`;
+  el.onclick = () => {
+    if (isSel) {
+      selectedHandIds = selectedHandIds.filter((x) => x !== card.id);
+    } else {
+      if (selectedHandIds.length >= 2) selectedHandIds.shift();
+      selectedHandIds.push(card.id);
+    }
+    skelFlip180 = false;
+    pendingPos = null;
+    hintKey = null;
+    $("g-hint-banner").classList.add("hidden");
+    renderGame();
+  };
+  return el;
+}
 
-    el.innerHTML = `${card.heavy ? '<span class="heavy-mark">重</span>' : ""}
-      ${noColorSkel ? '<span class="no-skel-mark">色変不可</span>' : ""}
-      <div class="svg-wrap">${svg}</div>
-      <span class="type-pill">${typeLbl}</span>
-      <div class="lbl">${colorText}</div>`;
-    el.onclick = () => {
-      if (!canAct) return;
-      if (isSel) {
-        selectedHandIds = selectedHandIds.filter((x) => x !== card.id);
-      } else {
-        if (selectedHandIds.length >= 2) selectedHandIds.shift();
-        selectedHandIds.push(card.id);
-      }
-      skelFlip180 = false;
-      pendingPos = null;
-      hintKey = null;
-      $("g-hint-banner").classList.add("hidden");
-      renderGame();
-    };
-    wrap.appendChild(el);
-  });
+function renderHand(hand, lastDrawnId) {
+  const selected = hand.filter((x) => selectedHandIds.includes(x.id));
+  const lines = hand.filter((c) => c.type === "line");
+  const skels = hand.filter((c) => c.type === "skel");
+  const crosses = hand.filter((c) => c.type === "cross");
 
-  const hasSel = selectedHandIds.length > 0 && canAct;
+  const fillTier = (elId, cntId, cards) => {
+    const wrap = $(elId);
+    $(cntId).textContent = `${cards.length}枚`;
+    wrap.innerHTML = "";
+    if (!cards.length) {
+      wrap.innerHTML = '<span class="muted" style="font-size:0.74rem;">（なし）</span>';
+      return;
+    }
+    cards.forEach((c) => wrap.appendChild(createHandCardEl(c, selected, lastDrawnId)));
+  };
+
+  fillTier("g-hand-line", "cnt-line", lines);
+  fillTier("g-hand-skel", "cnt-skel", skels);
+  fillTier("g-hand-cross", "cnt-cross", crosses);
+
+  const hasSel = selectedHandIds.length > 0;
   $("btn-rot").disabled = !hasSel;
   $("btn-clr").disabled = !hasSel;
   $("rot-deg").textContent = rotSteps * 90;
 }
 
-$("btn-zoom-in").onclick = () => { cellSize = Math.min(110, cellSize + 10); renderAll(); };
-$("btn-zoom-out").onclick = () => { cellSize = Math.max(46, cellSize - 10); renderAll(); };
+$("btn-zoom-in").onclick = () => { cellSize = Math.min(110, cellSize + 8); renderAll(); };
+$("btn-zoom-out").onclick = () => { cellSize = Math.max(32, cellSize - 8); renderAll(); };
 $("btn-rot").onclick = () => { rotSteps = (rotSteps + 1) % 4; renderGame(); };
 $("btn-clr").onclick = () => { selectedHandIds = []; rotSteps = 0; skelFlip180 = false; pendingPos = null; renderGame(); };
 
@@ -1777,7 +1780,10 @@ $("btn-draw").onclick = async () => {
   const drawn = deck.pop();
   const hand = [...(roomData.players[myUid].hand || []), drawn];
   await update(ref(db, `rooms/${roomId}`), {
-    deck, [`players/${myUid}/hand`]: hand, hasDrawn: true
+    deck,
+    [`players/${myUid}/hand`]: hand,
+    [`players/${myUid}/lastDrawnId`]: drawn.id,
+    hasDrawn: true
   });
 };
 
@@ -1831,7 +1837,7 @@ function onCellTap(r, c) {
   const hand = roomData.players[myUid]?.hand || [];
   const selected = hand.filter((x) => selectedHandIds.includes(x.id));
   if (!selected.length) {
-    showErr("g-msg", "先に手札からカードを選択してください。");
+    showErr("g-msg", "先に手札からカードを選択してください（他人の手番中でもお試しできます）。");
     return;
   }
   const board = roomData.board || {};
@@ -1859,6 +1865,14 @@ function onCellTap(r, c) {
 }
 
 $("btn-pend-confirm").onclick = async () => {
+  const order = roomData.turnOrder || [];
+  const curUid = order[roomData.turnIndex % order.length];
+  const deck = roomData.deck || [];
+  const readyToPlay = curUid === myUid && (roomData.hasDrawn || deck.length === 0);
+  if (!readyToPlay) {
+    showErr("g-msg", "今はあなたの配置番ではありません（お試し表示中です）。");
+    return;
+  }
   if (!pendingPos) return;
   const { r, c } = pendingPos;
   const hand = roomData.players[myUid]?.hand || [];
@@ -1975,12 +1989,4 @@ $("btn-rep-play").onclick = () => {
 $("btn-rep-pause").onclick = stopRepPlay;
 $("rep-speed").onchange = () => { if (repTimer) { stopRepPlay(); $("btn-rep-play").click(); } };
 
-$("btn-rules").onclick = () => $("mod-rules").classList.remove("hidden");
-$("btn-rules-close").onclick = () => $("mod-rules").classList.add("hidden");
-
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, (m) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-}
-</script>
-</body>
-</html>
+$("btn-rules").onclick = () => $("mod
